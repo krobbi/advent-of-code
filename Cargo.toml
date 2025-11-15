@@ -1,0 +1,18 @@
+[package]
+name = "advent-of-code"
+edition = "2024"
+description = "My Advent of Code solutions in Rust"
+repository = "https://github.com/krobbi/advent-of-code"
+publish = false
+
+[lints.rust]
+unknown_lints = "forbid"
+
+[lints.clippy]
+pedantic = "warn"
+
+[profile.release]
+strip = true
+lto = true
+panic = "abort"
+codegen-units = 1
