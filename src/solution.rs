@@ -1,7 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
 /// A value stored in a [`Solution`].
-type Value = i16;
+type Value = i32;
 
 /// A solution to a [`Part`][crate::Part].
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
