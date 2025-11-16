@@ -1,4 +1,106 @@
-/// Prints a hello world message.
+mod solution;
+
+pub use crate::solution::Solution;
+
+use std::{
+    fs,
+    io::{self, Write as _},
+    path::Path,
+    time::Instant,
+};
+
+/// Defines the completed [`Puzzle`]s.
+macro_rules! define_puzzles {
+    {$(
+        mod($year:literal) $event:ident {$(
+            mod $puzzle:ident;
+        )*}
+    )*} => {
+        $(
+            mod $event {
+                $(
+                    mod $puzzle;
+                )*
+
+                use super::Puzzle;
+
+                #[doc = "The event's puzzle input paths and [`Puzzle`]s."]
+                pub static DATA: &[(&str, Puzzle)] = &[$((
+                    concat!("inputs/", stringify!($event), "/", stringify!($puzzle), ".txt"),
+                    ($puzzle::part_one, $puzzle::part_two),
+                )),*];
+            }
+        )*
+
+        #[doc = "The map of years to event data."]
+        static YEARS: &[(u16, &[(&str, Puzzle)])] = &[$(
+            ($year, $event::DATA)
+        ),*];
+    };
+}
+
+define_puzzles! {
+    mod(2015) advent_of_code_2015 {
+        mod day_1_not_quite_lisp;
+    }
+}
+
+/// A function which solves part of a puzzle.
+type Part = fn(input: &str) -> Solution;
+
+/// A pair of functions which solve a two-part puzzle.
+type Puzzle = (Part, Part);
+
+/// Solves every completed [`Puzzle`].
 fn main() {
-    println!("Hello, Advent of Code!");
+    for (year, data) in YEARS {
+        for (index, (path, puzzle)) in data.iter().copied().enumerate() {
+            print!("Advent of Code {year}, Day {}: ", index + 1);
+            flush_stdout();
+
+            let path = Path::new(path);
+
+            assert!(path.is_relative(), "puzzle input path should be relative");
+
+            if !Path::new(path).is_file() {
+                println!("[puzzle input missing: {}]", path.display());
+                continue;
+            }
+
+            let input = match fs::read_to_string(path) {
+                Ok(input) => input,
+                Err(error) => {
+                    println!();
+                    eprintln!("Error: puzzle input could not be read: {error}");
+                    return;
+                }
+            };
+
+            solve_part(puzzle.0, &input);
+            print!(", ");
+            flush_stdout();
+
+            solve_part(puzzle.1, &input);
+            println!();
+        }
+    }
+}
+
+/// Flushes the standard output stream.
+fn flush_stdout() {
+    io::stdout()
+        .flush()
+        .expect("flushing stdout should not fail");
+}
+
+/// Solves a [`Part`] with a puzzle input and prints its result.
+fn solve_part(part: Part, input: &str) {
+    let bench = Instant::now();
+    let solution = part(input);
+    let duration = bench.elapsed();
+    print!("[{solution}]");
+
+    if solution.is_benchable() {
+        print!(" in {duration:?}");
+    }
 }
