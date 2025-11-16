@@ -27,8 +27,28 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    let mut ribbon_length = 0;
+
+    // Add up the length of ribbon needed for each present.
+    for line in input.lines() {
+        let (length, width, height) = parse_present(line);
+
+        // Calculate the perimeters for each kind of face.
+        let top_perimeter = 2 * (length + width);
+        let front_perimeter = 2 * (width + height);
+        let side_perimeter = 2 * (height + length);
+
+        // Find the minimum length of ribbon to wrap the present.
+        let wrap_length = top_perimeter.min(front_perimeter).min(side_perimeter);
+
+        // The volume of the present is equal to the length of ribbon needed to
+        // tie a bow.
+        let volume = length * width * height;
+
+        ribbon_length += wrap_length + volume;
+    }
+
+    ribbon_length.into()
 }
 
 /// Parses the length, width, and height of a present from a line of text.
