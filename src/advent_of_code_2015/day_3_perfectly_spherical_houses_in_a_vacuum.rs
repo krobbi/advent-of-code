@@ -11,28 +11,19 @@ pub fn part_one(input: &str) -> Solution {
     // Keep track of the set of houses which have been visited.
     let mut visited_houses = HashSet::new();
 
-    // Also keep track of Santa's position.
-    let (mut x, mut y) = (0i16, 0i16);
+    // Keep track of Santa's position.
+    let (mut santa_x, mut santa_y) = (0, 0);
 
-    // He has a list of directions.
+    // He starts by delivering a present to a house.
+    visited_houses.insert((santa_x, santa_y));
+
+    // After that, he follows a list of directions.
     for direction in input.chars() {
-        // And delivers a present before following the direction.
-        visited_houses.insert((x, y));
-
-        let (direction_x, direction_y) = match direction {
-            '^' => (0, 1),
-            'v' => (0, -1),
-            '>' => (1, 0),
-            '<' => (-1, 0),
-            _ => (0, 0),
-        };
-
-        x += direction_x;
-        y += direction_y;
+        let (vx, vy) = direction_vector(direction);
+        santa_x += vx;
+        santa_y += vy;
+        visited_houses.insert((santa_x, santa_y));
     }
-
-    // He also visits a house after his last move.
-    visited_houses.insert((x, y));
 
     // Find the number of houses he visited.
     visited_houses.len().into()
@@ -46,7 +37,7 @@ pub fn part_two(input: &str) -> Solution {
     // Santa's position is kept track of again.
     let (mut santa_x, mut santa_y) = (0, 0);
 
-    // He is also joined by Robo-Santa.
+    // He is joined by Robo-Santa.
     let (mut robo_x, mut robo_y) = (0, 0);
 
     // They both deliver a present to the starting house.
