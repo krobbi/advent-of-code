@@ -12,6 +12,7 @@ pub fn part_one(input: &str) -> Solution {
         floor += instruction_effect(instruction);
     }
 
+    // Find the floor he ends up on.
     floor.into()
 }
 
@@ -32,11 +33,10 @@ pub fn part_two(input: &str) -> Solution {
     }
 
     // Santa never entered the basement.
-    Solution::Unsolvable
+    Solution::SolveError
 }
 
-/// Returns the effect of an instruction on Santa's floor number. This function
-/// is used in both puzzles.
+/// Returns the effect of an instruction on Santa's floor number.
 fn instruction_effect(instruction: char) -> i16 {
     // Santa goes up one floor on '(' and down one floor on ')'. Any other
     // instructions can be ignored.

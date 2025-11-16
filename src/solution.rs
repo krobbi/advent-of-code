@@ -9,16 +9,19 @@ pub enum Solution {
     /// A solution was found.
     Solved(Value),
 
+    /// A solution which overflows a [`Value`] was found.
+    Overflowed,
+
     /// A [`Part`][crate::Part] was defined with no solution.
     #[allow(dead_code, reason = "all puzzles may be completed")]
     #[default]
     Incomplete,
 
-    /// A solution which overflows a [`Value`] was found.
-    Overflowed,
+    /// A [`Part`][crate::Part] could not parse its puzzle input.
+    ParseError,
 
-    /// An unsolvable state was encountered.
-    Unsolvable,
+    /// A [`Part`][crate::Part] entered an unsolvable state.
+    SolveError,
 }
 
 impl Solution {
@@ -43,7 +46,8 @@ impl Display for Solution {
             Self::Solved(value) => return value.fmt(f),
             Self::Incomplete => "incomplete",
             Self::Overflowed => "overflowed",
-            Self::Unsolvable => "unsolvable",
+            Self::ParseError => "failed to parse puzzle input",
+            Self::SolveError => "failed to solve puzzle",
         };
 
         f.write_str(message)

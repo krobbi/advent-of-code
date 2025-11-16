@@ -4,25 +4,28 @@ use crate::Solution;
 
 /// Solves part one.
 pub fn part_one(input: &str) -> Solution {
-    let mut area = 0;
+    let mut wrapping_paper_area = 0;
 
     // Add up the area of wrapping paper needed for each present.
     for line in input.lines() {
-        let (length, width, height) = parse_present(line);
+        let Some((length, width, height)) = parse_present(line) else {
+            return Solution::ParseError;
+        };
 
-        // Calculate the areas of wrapping paper needed for each kind of face.
+        // Calculate the areas of each kind of face on a present.
         let top_area = length * width;
         let front_area = width * height;
         let side_area = height * length;
 
         // Find the smallest face area for extra slack wrapping paper.
-        let slack = top_area.min(front_area).min(side_area);
+        let slack_area = top_area.min(front_area).min(side_area);
 
-        // There are two of each kind of face.
-        area += 2 * top_area + 2 * front_area + 2 * side_area + slack;
+        // There needs to be enough wrapping paper to cover two of each kind of
+        // face, plus the extra slack area.
+        wrapping_paper_area += 2 * top_area + 2 * front_area + 2 * side_area + slack_area;
     }
 
-    area.into()
+    wrapping_paper_area.into()
 }
 
 /// Solves part two.
@@ -31,31 +34,35 @@ pub fn part_two(input: &str) -> Solution {
 
     // Add up the length of ribbon needed for each present.
     for line in input.lines() {
-        let (length, width, height) = parse_present(line);
+        let Some((length, width, height)) = parse_present(line) else {
+            return Solution::ParseError;
+        };
 
-        // Calculate the perimeters for each kind of face.
+        // Calculate the perimeters of each kind of face on a present.
         let top_perimeter = 2 * (length + width);
         let front_perimeter = 2 * (width + height);
         let side_perimeter = 2 * (height + length);
 
-        // Find the minimum length of ribbon to wrap the present.
+        // The ribbon is wrapped around the present with the shortest length
+        // possible.
         let wrap_length = top_perimeter.min(front_perimeter).min(side_perimeter);
 
-        // The volume of the present is equal to the length of ribbon needed to
-        // tie a bow.
-        let volume = length * width * height;
+        // The length of ribbon needed to tie a bow is equal to the present's
+        // volume.
+        let bow_length = length * width * height;
 
-        ribbon_length += wrap_length + volume;
+        ribbon_length += wrap_length + bow_length;
     }
 
     ribbon_length.into()
 }
 
-/// Parses the length, width, and height of a present from a line of text.
-fn parse_present(line: &str) -> (u32, u32, u32) {
+/// Parses the length, width, and height of a present from a line of text. This
+/// function returns [`None`] if the line of text could not be parsed.
+fn parse_present(line: &str) -> Option<(u32, u32, u32)> {
     let mut line = line.split('x');
-    let length = line.next().unwrap().parse().unwrap();
-    let width = line.next().unwrap().parse().unwrap();
-    let height = line.next().unwrap().parse().unwrap();
-    (length, width, height)
+    let length = line.next()?.parse().ok()?;
+    let width = line.next()?.parse().ok()?;
+    let height = line.next()?.parse().ok()?;
+    Some((length, width, height))
 }
