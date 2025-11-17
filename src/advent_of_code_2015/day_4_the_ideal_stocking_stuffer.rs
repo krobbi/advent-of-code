@@ -66,3 +66,15 @@ fn brute_force(input: &str, mask: u32) -> Solution {
 
     Solution::SolveError
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Tests part one.
+    #[test]
+    fn part_one_works() {
+        assert_eq!(part_one("abcdef"), Solution::Solved(609_043));
+        assert_eq!(part_one("pqrstuv"), Solution::Solved(1_048_970));
+    }
+}

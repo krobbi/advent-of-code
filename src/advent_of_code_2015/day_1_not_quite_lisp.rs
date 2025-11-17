@@ -48,3 +48,29 @@ fn instruction_effect(instruction: char) -> i16 {
         _ => 0,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Tests part one.
+    #[test]
+    fn part_one_works() {
+        assert_eq!(part_one("(())"), Solution::Solved(0));
+        assert_eq!(part_one("()()"), Solution::Solved(0));
+        assert_eq!(part_one("((("), Solution::Solved(3));
+        assert_eq!(part_one("(()(()("), Solution::Solved(3));
+        assert_eq!(part_one("))((((("), Solution::Solved(3));
+        assert_eq!(part_one("())"), Solution::Solved(-1));
+        assert_eq!(part_one("))("), Solution::Solved(-1));
+        assert_eq!(part_one(")))"), Solution::Solved(-3));
+        assert_eq!(part_one(")())())"), Solution::Solved(-3));
+    }
+
+    /// Tests part two.
+    #[test]
+    fn part_two_works() {
+        assert_eq!(part_two(")"), Solution::Solved(1));
+        assert_eq!(part_two("()())"), Solution::Solved(5));
+    }
+}

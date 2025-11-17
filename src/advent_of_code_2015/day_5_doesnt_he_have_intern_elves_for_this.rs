@@ -81,3 +81,27 @@ fn is_string_nice_part_two(string: &str) -> bool {
 
     false
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Tests part one.
+    #[test]
+    fn part_one_works() {
+        assert!(is_string_nice_part_one("ugknbfddgicrmopn"));
+        assert!(is_string_nice_part_one("aaa"));
+        assert!(!is_string_nice_part_one("jchzalrnumimnmhp"));
+        assert!(!is_string_nice_part_one("haegwjzuvuyypxyu"));
+        assert!(!is_string_nice_part_one("dvszwmarrgswjxmb"));
+    }
+
+    /// Tests part two.
+    #[test]
+    fn part_two_works() {
+        assert!(is_string_nice_part_two("qjhvhtzxzqqjkmpb"));
+        assert!(is_string_nice_part_two("xxyxx"));
+        assert!(!is_string_nice_part_two("uurcxstgmygtbstg"));
+        assert!(!is_string_nice_part_two("ieodomkazucvgmuy"));
+    }
+}

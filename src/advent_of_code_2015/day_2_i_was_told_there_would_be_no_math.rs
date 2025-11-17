@@ -68,3 +68,22 @@ fn parse_present(line: &str) -> Option<(u32, u32, u32)> {
     let height = line.next()?.parse().ok()?;
     Some((length, width, height))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Tests part one.
+    #[test]
+    fn part_one_works() {
+        assert_eq!(part_one("2x3x4"), Solution::Solved(58));
+        assert_eq!(part_one("1x1x10"), Solution::Solved(43));
+    }
+
+    /// Tests part two.
+    #[test]
+    fn part_two_works() {
+        assert_eq!(part_two("2x3x4"), Solution::Solved(34));
+        assert_eq!(part_two("1x1x10"), Solution::Solved(14));
+    }
+}
