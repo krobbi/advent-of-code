@@ -24,17 +24,21 @@ pub fn part_one(input: &str) -> Solution {
 
     // Despite this, brute force is fast enough for finding five zeroes in under
     // a second.
-    part_one_brute_force(input)
+    brute_force(input, 0x00000fff)
 }
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // This time six zeroes are needed. I had a bad feeling about this one but
+    // it finishes in under 10 seconds. My answer was only 7 digits for an
+    // 8-character secret key, and started with a 3, so maybe it would take
+    // about 5 minutes in the worst case. This is probably not the intended
+    // solution.
+    brute_force(input, 0x000000ff)
 }
 
-/// Solves part one with brute force.
-fn part_one_brute_force(input: &str) -> Solution {
+/// Solves the puzzle with brute force.
+fn brute_force(input: &str, mask: u32) -> Solution {
     // Keep the secret key length in a variable. This might be a meaningless
     // micro-optimization, but speed is important here.
     let len = input.len();
@@ -55,8 +59,7 @@ fn part_one_brute_force(input: &str) -> Solution {
         buffer.extend_from_slice(number.to_string().as_bytes());
         let hash = md5::compute(&buffer).0;
 
-        // Check if the first 5 hex digits of the hash are zero.
-        if u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]) <= 0x00000fff {
+        if u32::from_be_bytes([hash[0], hash[1], hash[2], hash[3]]) <= mask {
             return number.into();
         }
     }
