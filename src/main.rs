@@ -69,7 +69,7 @@ fn main() {
                 continue;
             }
 
-            print!("Advent of Code {year}, Day {day}");
+            print!("Advent of Code {year}, Day {day}: ");
             flush_stdout();
 
             let path = Path::new(path);
