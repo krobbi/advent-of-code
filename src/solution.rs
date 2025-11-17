@@ -27,7 +27,7 @@ pub enum Solution {
 impl Solution {
     /// Returns `true` if the `Solution` is applicable for benchmarking.
     pub fn is_benchable(self) -> bool {
-        self != Self::Incomplete
+        self != Self::Incomplete && self != Self::ParseError
     }
 }
 
