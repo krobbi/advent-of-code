@@ -24,7 +24,7 @@ pub fn part_one(input: &str) -> Solution {
 
     // Despite this, brute force is fast enough for finding five zeroes in under
     // a second.
-    brute_force(input, 0x00000fff)
+    brute_force(input, 0x0000_0fff)
 }
 
 /// Solves part two.
@@ -34,7 +34,7 @@ pub fn part_two(input: &str) -> Solution {
     // 8-character secret key, and started with a 3, so maybe it would take
     // about 5 minutes in the worst case. This is probably not the intended
     // solution.
-    brute_force(input, 0x000000ff)
+    brute_force(input, 0x0000_00ff)
 }
 
 /// Solves the puzzle with brute force.
