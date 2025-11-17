@@ -4,9 +4,21 @@
 
 use crate::Solution;
 
+/// A function for applying an [`Action`] to a slice of lights.
+type Adjuster = fn(action: Action, lights: &mut [u16]);
+
 /// Solves part one.
 pub fn part_one(input: &str) -> Solution {
-    // Keep track of the grid of lights.
+    solve_part(input, adjust_lights_part_one)
+}
+
+/// Solves part two.
+pub fn part_two(input: &str) -> Solution {
+    solve_part(input, adjust_lights_part_two)
+}
+
+/// Solves a part with an [`Adjuster`].
+fn solve_part(input: &str, adjuster: Adjuster) -> Solution {
     let mut grid = Grid::new();
 
     for instruction in input.lines() {
@@ -14,73 +26,92 @@ pub fn part_one(input: &str) -> Solution {
             return Solution::ParseError;
         };
 
-        grid.apply_action(action, rect);
+        grid.apply_action(action, rect, adjuster);
     }
 
-    grid.count().into()
+    grid.brightness().into()
 }
 
-/// Solves part two.
-pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+/// Applies an [`Action`] to a slice of lights for part one.
+fn adjust_lights_part_one(action: Action, lights: &mut [u16]) {
+    match action {
+        Action::TurnOn => lights.fill(1),
+        Action::TurnOff => lights.fill(0),
+        Action::Toggle => {
+            for light in lights {
+                *light = u16::from(*light == 0);
+            }
+        }
+    }
+}
+
+/// Applies an [`Action`] to a slice of lights for part two.
+fn adjust_lights_part_two(action: Action, lights: &mut [u16]) {
+    match action {
+        Action::TurnOn => {
+            for light in lights {
+                *light += 1;
+            }
+        }
+        Action::TurnOff => {
+            for light in lights {
+                *light = light.saturating_sub(1);
+            }
+        }
+        Action::Toggle => {
+            for light in lights {
+                *light += 2;
+            }
+        }
+    }
 }
 
 /// A grid of lights.
 struct Grid {
-    /// The lights.
-    lights: Box<[bool]>,
+    /// The brightness of each light.
+    lights: Box<[u16]>,
 }
 
 impl Grid {
     /// Creates a new `Grid`.
     fn new() -> Self {
-        Self { lights: vec![false; 1_000_000].into_boxed_slice() }
+        Self { lights: vec![0; 1_000_000].into_boxed_slice() }
     }
 
-    /// Applies an [`Action`] to the `Grid` with a [`Rect`].
-    fn apply_action(&mut self, action: Action, rect: Rect) {
+    /// Applies an [`Action`] to a [`Rect`] of the grid with an [`Adjuster`].
+    fn apply_action(&mut self, action: Action, rect: Rect, adjuster: Adjuster) {
         let left = usize::from(rect.left);
         let right = usize::from(rect.right);
 
         for y in rect.top..=rect.bottom {
             let index = usize::from(y) * 1000;
             let slice = &mut self.lights[(index + left)..=(index + right)];
-
-            match action {
-                Action::TurnOn => slice.fill(true),
-                Action::TurnOff => slice.fill(false),
-                Action::Toggle => {
-                    for light in slice.iter_mut() {
-                        *light = !*light;
-                    }
-                }
-            }
+            adjuster(action, slice);
         }
     }
 
-    /// Returns the number of lights that are turned on.
-    fn count(&self) -> u32 {
-        let mut count = 0;
+    /// Returns the total brightness of the grid.
+    fn brightness(&self) -> u32 {
+        let mut brightness = 0;
 
         for light in &self.lights {
-            count += u32::from(*light);
+            brightness += u32::from(*light);
         }
 
-        count
+        brightness
     }
 }
 
-/// An action that can be applied with a [`Rect`].
+/// An action that can be applied to lights.
 #[derive(Clone, Copy)]
 enum Action {
-    /// Turn on the lights in the [`Rect`].
+    /// Turn on the lights.
     TurnOn,
 
-    /// Turn off the lights in the [`Rect`].
+    /// Turn off the lights.
     TurnOff,
 
-    /// Toggle the lights in the [`Rect`].
+    /// Toggle the lights.
     Toggle,
 }
 
