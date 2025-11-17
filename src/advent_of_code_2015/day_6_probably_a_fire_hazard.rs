@@ -172,17 +172,54 @@ fn parse_position(word: &str) -> Option<(u16, u16)> {
     Some((x, y))
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        let mut grid = TestGrid::new(adjust_lights_part_one);
+        grid.check_instruction("turn on 0,0 through 999,999", 1_000_000);
+        grid.check_instruction("turn off 5,0 through 9,1", 999_990);
+        grid.check_instruction("toggle 0,0 through 999,0", 999_000);
+        grid.check_instruction("turn off 499,499 through 500,500", 998_996);
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        let mut grid = TestGrid::new(adjust_lights_part_two);
+        grid.check_instruction("turn on 0,0 through 0,0", 1);
+        grid.check_instruction("toggle 0,0 through 999,999", 2_000_001);
+        grid.check_instruction("turn off 0,0 through 999,999", 1_000_001);
+    }
+
+    /// A [`Grid`] for testing.
+    struct TestGrid {
+        /// The [`Grid`].
+        grid: Grid,
+
+        /// The [`Adjuster`].
+        adjuster: Adjuster,
+    }
+
+    impl TestGrid {
+        /// Creates a new `TestGrid` from an [`Adjuster`].
+        fn new(adjuster: Adjuster) -> Self {
+            Self {
+                grid: Grid::new(),
+                adjuster,
+            }
+        }
+
+        /// Checks that an instruction produces an expected brightness.
+        fn check_instruction(&mut self, instruction: &str, brightness: u32) {
+            let (action, rect) =
+                parse_instruction(instruction).expect("instruction should be valid");
+
+            self.grid.apply_action(action, rect, self.adjuster);
+            assert_eq!(self.grid.brightness(), brightness);
+        }
+    }
 }
-*/
