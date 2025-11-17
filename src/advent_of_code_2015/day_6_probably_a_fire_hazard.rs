@@ -75,7 +75,9 @@ struct Grid {
 impl Grid {
     /// Creates a new `Grid`.
     fn new() -> Self {
-        Self { lights: vec![0; 1_000_000].into_boxed_slice() }
+        Self {
+            lights: vec![0; 1_000_000].into_boxed_slice(),
+        }
     }
 
     /// Applies an [`Action`] to a [`Rect`] of the grid with an [`Adjuster`].
@@ -141,7 +143,7 @@ fn parse_instruction(instruction: &str) -> Option<(Action, Rect)> {
             "on" => Action::TurnOn,
             "off" => Action::TurnOff,
             _ => return None,
-        }
+        },
         "toggle" => Action::Toggle,
         _ => return None,
     };
@@ -149,7 +151,16 @@ fn parse_instruction(instruction: &str) -> Option<(Action, Rect)> {
     let (left, top) = parse_position(words.next()?)?;
     words.next(); // Skip "through".
     let (right, bottom) = parse_position(words.next()?)?;
-    Some((action, Rect { left, right, top, bottom }))
+
+    Some((
+        action,
+        Rect {
+            left,
+            right,
+            top,
+            bottom,
+        },
+    ))
 }
 
 /// Parses a light position from a word. This function returns [`None`] if a

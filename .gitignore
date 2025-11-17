@@ -1,8 +1,7 @@
-# Puzzle inputs:
-inputs/*
-
 # Ignore:
 ignore/*
+inputs/*
+*.bat
 
 # Rust:
 target/*

@@ -33,7 +33,7 @@ fn is_string_nice_part_one(string: &str) -> bool {
     // Nice strings must not contain the pairs "ab", "cd", "pq", or "xy".
     for letter in string.chars() {
         match (previous_letter, letter) {
-            (_, 'a' | 'e' | 'i' | 'o'| 'u') => vowel_count += 1,
+            (_, 'a' | 'e' | 'i' | 'o' | 'u') => vowel_count += 1,
             ('a', 'b') | ('c', 'd') | ('p', 'q') | ('x', 'y') => return false,
             _ => (),
         }

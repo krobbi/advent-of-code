@@ -1,6 +1,6 @@
 # Advent of Code
 These are my attempts at solving puzzles from
-[Advent of Code](https://adventofcode.com/), an annual advent calendar of
+[Advent of Code](https://adventofcode.com/) - an annual advent calendar of
 programming puzzles. I am using [Rust](https://rust-lang.org/).
 
 Puzzle inputs are not included in this repository by request of the
@@ -9,6 +9,10 @@ Puzzle inputs are not included in this repository by request of the
 Puzzle inputs are given similar names to the code that solves them. For
 example, the puzzle input for `src/advent_of_code_2015/day_1_not_quite_lisp.rs`
 should be located at `inputs/advent_of_code_2015/day_1_not_quite_lisp.txt`.
+
+# Issues
+Puzzle solution modules are declared in a macro to avoid repetition. These
+modules will not be formatted if you use `cargo fmt`.
 
 # Dependencies
 Dependencies are mostly avoided for puzzle solutions, but they are sometimes
