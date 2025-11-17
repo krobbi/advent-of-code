@@ -12,6 +12,7 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
+    // Now he has changed his rules for nice strings.
     solve_part(input, is_string_nice_part_two)
 }
 
