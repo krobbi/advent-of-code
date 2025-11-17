@@ -5,6 +5,9 @@ description = "My Advent of Code solutions in Rust"
 repository = "https://github.com/krobbi/advent-of-code"
 publish = false
 
+[dependencies]
+md5 = "0.8.0"
+
 [lints.rust]
 unknown_lints = "forbid"
 
