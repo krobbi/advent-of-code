@@ -45,6 +45,7 @@ define_puzzles! {
         mod day_2_i_was_told_there_would_be_no_math;
         mod day_3_perfectly_spherical_houses_in_a_vacuum;
         mod day_4_the_ideal_stocking_stuffer;
+        mod day_5_doesnt_he_have_intern_elves_for_this;
     }
 }
 
