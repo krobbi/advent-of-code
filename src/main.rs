@@ -41,13 +41,13 @@ macro_rules! define_puzzles {
 
 define_puzzles! {
     mod(2015) advent_of_code_2015 {
-        mod day_1_not_quite_lisp;
-        mod day_2_i_was_told_there_would_be_no_math;
-        mod day_3_perfectly_spherical_houses_in_a_vacuum;
-        mod day_4_the_ideal_stocking_stuffer;
-        mod day_5_doesnt_he_have_intern_elves_for_this;
-        mod day_6_probably_a_fire_hazard;
-        mod day_7_some_assembly_required;
+        mod day_01_not_quite_lisp;
+        mod day_02_i_was_told_there_would_be_no_math;
+        mod day_03_perfectly_spherical_houses_in_a_vacuum;
+        mod day_04_the_ideal_stocking_stuffer;
+        mod day_05_doesnt_he_have_intern_elves_for_this;
+        mod day_06_probably_a_fire_hazard;
+        mod day_07_some_assembly_required;
     }
 }
 
