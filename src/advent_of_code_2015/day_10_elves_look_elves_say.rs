@@ -20,8 +20,15 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // Play look-and-say on the input string 50 times. This is a little slow and
+    // there might be a better way to do this.
+    let mut input = input.to_owned();
+
+    for _ in 0..50 {
+        input = look_and_say(&input)
+    }
+
+    input.len().into()
 }
 
 /// Returns a new look-and-say string from an input string.
@@ -60,10 +67,4 @@ mod tests {
         assert_eq!(look_and_say("1211"), "111221");
         assert_eq!(look_and_say("111221"), "312211");
     }
-
-    /*
-    /// Tests part two.
-    #[test]
-    fn part_two_works() {}
-    */
 }
