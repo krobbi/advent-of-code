@@ -50,6 +50,7 @@ define_puzzles! {
         mod day_07_some_assembly_required;
         mod day_08_matchsticks;
         mod day_09_all_in_a_single_night;
+        mod day_10_elves_look_elves_say;
     }
 }
 
