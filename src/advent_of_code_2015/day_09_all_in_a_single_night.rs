@@ -159,17 +159,21 @@ fn parse_graph(input: &str) -> Option<Graph> {
     Some(graph)
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    /// Tests part one.
+    /// Tests both parts.
     #[test]
-    fn part_one_works() {}
+    fn parts_work() {
+        let (shortest_distance, longest_distance) = solve_parts(
+            "London to Dublin = 464\n\
+            London to Belfast = 518\n\
+            Dublin to Belfast = 141\n",
+        )
+        .expect("input should be valid");
 
-    /// Tests part two.
-    #[test]
-    fn part_two_works() {}
+        assert_eq!(shortest_distance, 605);
+        assert_eq!(longest_distance, 982);
+    }
 }
-*/
