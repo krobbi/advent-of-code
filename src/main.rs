@@ -49,6 +49,7 @@ define_puzzles! {
         mod day_06_probably_a_fire_hazard;
         mod day_07_some_assembly_required;
         mod day_08_matchsticks;
+        mod day_09_all_in_a_single_night;
     }
 }
 
