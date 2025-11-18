@@ -25,7 +25,7 @@ pub fn part_two(input: &str) -> Solution {
     let mut input = input.to_owned();
 
     for _ in 0..50 {
-        input = look_and_say(&input)
+        input = look_and_say(&input);
     }
 
     input.len().into()
