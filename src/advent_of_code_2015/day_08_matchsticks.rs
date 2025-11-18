@@ -30,21 +30,7 @@ pub fn part_two(input: &str) -> Solution {
 
     for string in input.lines() {
         let len = string.len();
-
-        // The escaped string is at least 2 characters longer because of the
-        // surrounding quotes.
-        let mut escaped_len = 2;
-
-        for char in string.chars() {
-            // Quotes and backslashes need to be escaped, everything else is
-            // fine.
-            escaped_len += match char {
-                '"' | '\\' => 2,
-                _ => 1,
-            };
-        }
-
-        len_difference += escaped_len - len;
+        len_difference += escaped_len(string) - len;
     }
 
     len_difference.into()
@@ -81,17 +67,55 @@ fn unescaped_len(string: &str) -> Option<usize> {
     }
 }
 
-/*
+/// Returns the escaped length of a string.
+fn escaped_len(string: &str) -> usize {
+    // 2 characters are added for the surrounding quotes.
+    let mut len = 2;
+
+    for char in string.chars() {
+        // Quotes and backslashes need a backslash before them, other characters
+        // are kept as-is.
+        len += match char {
+            '"' | '\\' => 2,
+            _ => 1,
+        };
+    }
+
+    len
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        check_unescaped_len("\"\"", 2, 0);
+        check_unescaped_len("\"abc\"", 5, 3);
+        check_unescaped_len("\"aaa\\\"aaa\"", 10, 7);
+        check_unescaped_len("\"\\x27\"", 6, 1);
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        check_escaped_len("\"\"", 2, 6);
+        check_escaped_len("\"abc\"", 5, 9);
+        check_escaped_len("\"aaa\\\"aaa\"", 10, 16);
+        check_escaped_len("\"\\x27\"", 6, 11);
+    }
+
+    /// Checks that a string has an expected length after unescaping it.
+    fn check_unescaped_len(string: &str, before: usize, after: usize) {
+        assert_eq!(string.len(), before);
+        let unescaped_len = unescaped_len(string).expect("string should be terminated");
+        assert_eq!(unescaped_len, after);
+    }
+
+    /// Checks that a string has an expected length after escaping it.
+    fn check_escaped_len(string: &str, before: usize, after: usize) {
+        assert_eq!(string.len(), before);
+        assert_eq!(escaped_len(string), after);
+    }
 }
-*/
