@@ -8,40 +8,14 @@ use crate::Solution;
 
 /// Solves part one.
 pub fn part_one(input: &str) -> Solution {
-    // Keep track of the wires in Bobby's circuit.
-    let mut circuit = Circuit::new();
+    // Keep track of Bobby's circuit and instruction booklet.
+    let Some((mut circuit, instructions)) = create_circuit(input) else {
+        return Solution::ParseError;
+    };
 
-    // Read all of the instructions to assemble the circuit.
-    let mut instructions = VecDeque::new();
-
-    for line in input.lines() {
-        let Some(instruction) = parse_instruction(line, &mut circuit) else {
-            return Solution::ParseError;
-        };
-
-        instructions.push_back(instruction);
-    }
-
-    // Follow the first instruction in the queue.
-    while let Some(instruction) = instructions.pop_front() {
-        match instruction.input.eval_signal(&circuit) {
-            None => {
-                // The instruction can't be evaluated yet, move it to the back
-                // of the queue.
-                instructions.push_back(instruction);
-            }
-            Some(signal) => {
-                // A signal has been found from the instruction, set it in the
-                // circuit and discard the instruction.
-                circuit.set_signal(instruction.output, signal);
-            }
-        }
-    }
-
-    // Find the signal on wire "a".
-    let a_wire_id = circuit.get_wire_id("a");
-
-    if let Some(signal) = circuit.get_signal(a_wire_id) {
+    // Follow the instructions until they are all complete and find the signal
+    // on wire "a".
+    if let Some(signal) = follow_instructions(instructions, &mut circuit) {
         signal.into()
     } else {
         Solution::SolveError
@@ -50,8 +24,50 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // Start by doing the same thing as part one.
+    let Some((mut circuit, instructions)) = create_circuit(input) else {
+        return Solution::ParseError;
+    };
+
+    let Some(signal) = follow_instructions(instructions.clone(), &mut circuit) else {
+        return Solution::SolveError;
+    };
+
+    // Override the signal on wire "b" with the signal from wire "a" and reset
+    // the other wires.
+    circuit.clear();
+    let wire_b_id = circuit.get_wire_id("b");
+    circuit.set_signal(wire_b_id, signal);
+
+    // Follow the instructions again and find the new signal on wire "a".
+    if let Some(signal) = follow_instructions(instructions, &mut circuit) {
+        signal.into()
+    } else {
+        Solution::SolveError
+    }
+}
+
+/// Follows a queue of [`Instruction`]s on a circuit and returns the signal on
+/// wire "a". This function returns [`None`] if wire "a" has no signal.
+fn follow_instructions(
+    mut instructions: VecDeque<Instruction>,
+    circuit: &mut Circuit,
+) -> Option<u16> {
+    // Keep following instructions until there are none left to follow.
+    while let Some(instruction) = instructions.pop_front() {
+        if let Some(signal) = instruction.input.eval_signal(circuit) {
+            // A signal was found from the instruction, set it in the circuit
+            // and discard the instruction.
+            circuit.set_signal(instruction.output, signal);
+        } else {
+            // The instruction can't be evaluated yet, move it to the back of
+            // the queue.
+            instructions.push_back(instruction);
+        }
+    }
+
+    let wire_a_id = circuit.get_wire_id("a");
+    circuit.get_signal(wire_a_id)
 }
 
 /// A circuit of wires with optional signals.
@@ -68,6 +84,11 @@ impl Circuit {
     /// Creates a new `Circuit`.
     fn new() -> Self {
         Self::default()
+    }
+
+    /// Clears the `Circuit`'s signals.
+    fn clear(&mut self) {
+        self.wire_signals.fill(None);
     }
 
     /// Returns a [`WireId`] from an identifier.
@@ -96,7 +117,9 @@ impl Circuit {
 
     /// Sets a wire's signal from its [`WireId`].
     fn set_signal(&mut self, id: WireId, signal: u16) {
-        self.wire_signals[usize::from(id.0)] = Some(signal);
+        if self.get_signal(id).is_none() {
+            self.wire_signals[usize::from(id.0)] = Some(signal);
+        }
     }
 }
 
@@ -105,6 +128,7 @@ impl Circuit {
 struct WireId(u16);
 
 /// An instruction for connecting wires.
+#[derive(Clone)]
 struct Instruction {
     /// The input [`Gate`].
     input: Gate,
@@ -114,6 +138,7 @@ struct Instruction {
 }
 
 /// A logic gate.
+#[derive(Clone)]
 enum Gate {
     /// A unary operation.
     Unary(UnOp, Source),
@@ -209,6 +234,21 @@ impl Source {
             Self::Wire(id) => circuit.get_signal(id),
         }
     }
+}
+
+/// Creates a new [`Circuit`] and queue of [`Instruction`]s from an instruction
+/// booklet. This function returns [`None`] if the instruction booklet could not
+/// be parsed.
+fn create_circuit(booklet: &str) -> Option<(Circuit, VecDeque<Instruction>)> {
+    let mut circuit = Circuit::new();
+    let mut instructions = VecDeque::new();
+
+    for line in booklet.lines() {
+        let instruction = parse_instruction(line, &mut circuit)?;
+        instructions.push_back(instruction);
+    }
+
+    Some((circuit, instructions))
 }
 
 /// Parses an [`Instruction`] from a line of text with a [`Circuit`]. This
