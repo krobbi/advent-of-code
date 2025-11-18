@@ -300,17 +300,67 @@ fn parse_source(word: &str, circuit: &mut Circuit) -> Option<Source> {
     Some(source)
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        check_booklet("123 -> x", &[("x", 123)]);
 
-    /// Tests part two.
-    #[test]
-    fn part_two_works() {}
+        check_booklet(
+            "x AND y -> z\n\
+            3 -> x\n\
+            6 -> y\n",
+            &[("x", 3), ("y", 6), ("z", 2)],
+        );
+
+        check_booklet(
+            "p LSHIFT 2 -> q\n\
+            100 -> p\n",
+            &[("p", 100), ("q", 400)],
+        );
+
+        check_booklet(
+            "NOT e -> f\n\
+            0 -> e",
+            &[("e", 0), ("f", 65535)],
+        );
+
+        check_booklet(
+            "123 -> x\n\
+            456 -> y\n\
+            x AND y -> d\n\
+            x OR y -> e\n\
+            x LSHIFT 2 -> f\n\
+            y RSHIFT 2 -> g\n\
+            NOT x -> h\n\
+            NOT y -> i\n",
+            &[
+                ("d", 72),
+                ("e", 507),
+                ("f", 492),
+                ("g", 114),
+                ("h", 65412),
+                ("i", 65079),
+                ("x", 123),
+                ("y", 456),
+            ],
+        );
+    }
+
+    /// Checks that an instruction booklet produces expected signals.
+    fn check_booklet(booklet: &str, signals: &[(&str, u16)]) {
+        let (mut circuit, instructions) =
+            create_circuit(booklet).expect("instruction booklet should be valid");
+
+        let _ = follow_instructions(instructions, &mut circuit);
+
+        for (identifier, expected_signal) in signals.iter().copied() {
+            let wire_id = circuit.get_wire_id(identifier);
+            let signal = circuit.get_signal(wire_id).expect("signal should exist");
+            assert_eq!(signal, expected_signal);
+        }
+    }
 }
-*/
