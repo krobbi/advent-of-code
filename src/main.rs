@@ -48,6 +48,7 @@ define_puzzles! {
         mod day_05_doesnt_he_have_intern_elves_for_this;
         mod day_06_probably_a_fire_hazard;
         mod day_07_some_assembly_required;
+        mod day_08_matchsticks;
     }
 }
 
