@@ -17,7 +17,7 @@ pub fn part_one(input: &str) -> Solution {
     let mut min_distance = usize::MAX;
 
     for name in map.location_names() {
-        find_min_distance(&mut map, &name, 0, &mut min_distance);
+        find_best_distance(&mut map, &name, 0, &mut min_distance, false);
     }
 
     min_distance.into()
@@ -25,19 +25,40 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // Now Santa wants to show off and take the longest distance. This is
+    // basically the same problem.
+    let Some(mut map) = parse_map(input) else {
+        return Solution::ParseError;
+    };
+
+    let mut max_distance = 0;
+
+    for name in map.location_names() {
+        find_best_distance(&mut map, &name, 0, &mut max_distance, true);
+    }
+
+    max_distance.into()
 }
 
-/// Recursively visits every [`Location`] in a map and updates a minimum
-/// distance to cover the [`Map`].
-fn find_min_distance(map: &mut Map, name: &str, distance: usize, min_distance: &mut usize) {
+/// Recursively visits every [`Location`] in a map and updates a best minimum or
+/// maximum distance to cover a [`Map`].
+fn find_best_distance(
+    map: &mut Map,
+    name: &str,
+    distance: usize,
+    best_distance: &mut usize,
+    is_max: bool,
+) {
     map.visit(name);
 
-    // If the entire map has been visited, then a new shortest distance may have
+    // If the entire map has been visited, then a new best distance may have
     // been found.
     if map.is_all_visited() {
-        *min_distance = (*min_distance).min(distance);
+        *best_distance = if is_max {
+            (*best_distance).max(distance)
+        } else {
+            (*best_distance).min(distance)
+        };
     }
 
     for (name, link_distance) in map.links(name) {
@@ -46,7 +67,7 @@ fn find_min_distance(map: &mut Map, name: &str, distance: usize, min_distance: &
             continue;
         }
 
-        find_min_distance(map, &name, distance + link_distance, min_distance);
+        find_best_distance(map, &name, distance + link_distance, best_distance, is_max);
     }
 
     map.unvist(name);
