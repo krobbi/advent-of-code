@@ -25,8 +25,29 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // Now we need to find the difference if we escaped the strings instead.
+    let mut len_difference = 0;
+
+    for string in input.lines() {
+        let len = string.len();
+
+        // The escaped string is at least 2 characters longer because of the
+        // surrounding quotes.
+        let mut escaped_len = 2;
+
+        for char in string.chars() {
+            // Quotes and backslashes need to be escaped, everything else is
+            // fine.
+            escaped_len += match char {
+                '"' | '\\' => 2,
+                _ => 1,
+            };
+        }
+
+        len_difference += escaped_len - len;
+    }
+
+    len_difference.into()
 }
 
 /// Returns the unescaped length of a string. This function returns [`None`] if
