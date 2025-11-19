@@ -85,7 +85,6 @@ impl Password {
     }
 
     /// Returns `true` if the `Password` is valid.
-    /// TODO: Also check for pairs.
     fn is_valid(self) -> bool {
         let mut has_straight = false;
 
@@ -98,7 +97,19 @@ impl Password {
             }
         }
 
-        has_straight
+        if !has_straight {
+            return false;
+        }
+
+        let mut pairs = Vec::with_capacity(4);
+
+        for (a, b) in self.letters.windows(2).map(|w| (w[0], w[1])) {
+            if a == b && !pairs.contains(&a) {
+                pairs.push(a);
+            }
+        }
+
+        pairs.len() >= 2
     }
 }
 
