@@ -15,26 +15,21 @@ pub fn part_one(input: &str) -> Solution {
     // * Must contain at lest two different pairs of letters
     //   (e.g. "aa" and "bb")
     // The next password that meets these rules must be found.
-    let Some(mut password) = parse_password(input) else {
+    let Some(password) = parse_password(input) else {
         return Solution::ParseError;
     };
 
-    loop {
-        password.increment();
-        password.clean();
-
-        if password.is_valid() {
-            break;
-        }
-    }
-
-    password.to_string().into()
+    password.next_valid().to_string().into()
 }
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // Santa's password expired again, now we need to find the next valid one.
+    let Some(password) = parse_password(input) else {
+        return Solution::ParseError;
+    };
+
+    password.next_valid().next_valid().to_string().into()
 }
 
 /// Returns `true` if a letter is not allowed in a `Password`.
@@ -53,6 +48,18 @@ struct Password {
 }
 
 impl Password {
+    /// Returns the next valid `Password`.
+    fn next_valid(mut self) -> Self {
+        loop {
+            self.increment();
+            self.clean();
+
+            if self.is_valid() {
+                break self;
+            }
+        }
+    }
+
     /// Increments the `Password`.
     fn increment(&mut self) {
         let mut index = 0;
@@ -84,32 +91,36 @@ impl Password {
         }
     }
 
-    /// Returns `true` if the `Password` is valid.
-    fn is_valid(self) -> bool {
-        let mut has_straight = false;
-
-        // First check if the password has a straight. The window is declared in
-        // reverse because the password is in reverse order in memory.
+    /// Returns `true` if the `Password` has a straight of three letters.
+    fn has_straight(self) -> bool {
+        // The window is declared in reverse because the password is in reverse
+        // order in memory.
         for (c, b, a) in self.letters.windows(3).map(|w| (w[0], w[1], w[2])) {
             if b == a + 1 && c == a + 2 {
-                has_straight = true;
-                break;
+                return true;
             }
         }
 
-        if !has_straight {
-            return false;
-        }
+        false
+    }
 
-        let mut pairs = Vec::with_capacity(4);
+    /// Returns `true` if the `Password` has at least two different pairs of
+    /// letters.
+    fn has_pairs(self) -> bool {
+        let mut found_pair = None;
 
         for (a, b) in self.letters.windows(2).map(|w| (w[0], w[1])) {
-            if a == b && !pairs.contains(&a) {
-                pairs.push(a);
+            if a == b && found_pair.get_or_insert(a) != &a {
+                return true;
             }
         }
 
-        pairs.len() >= 2
+        false
+    }
+
+    /// Returns `true` if the `Password` is valid, ignoring invalid letters.
+    fn is_valid(self) -> bool {
+        self.has_straight() && self.has_pairs()
     }
 }
 
@@ -159,12 +170,6 @@ mod tests {
         assert_eq!(part_one("abcdefgh"), "abcdffaa".into());
         assert_eq!(part_one("ghijklmn"), "ghjaabcc".into());
     }
-
-    /*
-    /// Tests part two.
-    #[test]
-    fn part_two_works() {}
-    */
 
     /// Returns `true` is a [`Password`] is valid from a string.
     fn is_password_valid(input: &str) -> bool {
