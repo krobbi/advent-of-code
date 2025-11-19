@@ -6,6 +6,7 @@ repository = "https://github.com/krobbi/advent-of-code"
 publish = false
 
 [dependencies]
+json = "0.12.4"
 md5 = "0.8.0"
 
 [lints.rust]

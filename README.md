@@ -13,6 +13,7 @@ should be located at `inputs/advent_of_code_2015/day_08_matchsticks.txt`.
 # Dependencies
 Dependencies are mostly avoided for puzzle solutions, but they are sometimes
 used to avoid "reinventing the wheel":
+* [json](https://crates.io/crates/json) - JSON parsing in 2015 day 12
 * [md5](https://crates.io/crates/md5) - MD5 hashing in 2015 day 4
 
 # Credits

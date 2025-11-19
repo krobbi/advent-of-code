@@ -68,9 +68,7 @@ fn main() {
 
     for (year, data) in YEARS {
         for (day, (path, puzzle)) in data.iter().copied().enumerate() {
-            let day = (day + 1)
-                .try_into()
-                .expect("day should not be more than 25");
+            let day = u8::try_from(day + 1).expect("day should not be more than 25");
 
             if day_filter.is_some_and(|d| d != day) {
                 continue;
