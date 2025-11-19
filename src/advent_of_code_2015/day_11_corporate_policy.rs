@@ -19,7 +19,16 @@ pub fn part_one(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    Solution::default()
+    loop {
+        password.increment();
+        password.clean();
+
+        if password.is_valid() {
+            break;
+        }
+    }
+
+    password.to_string().into()
 }
 
 /// Solves part two.
@@ -29,7 +38,7 @@ pub fn part_two(input: &str) -> Solution {
 }
 
 /// Returns `true` if a letter is not allowed in a `Password`.
-fn is_letter_bad(letter: u8) -> bool {
+fn is_letter_invalid(letter: u8) -> bool {
     const LETTER_I: u8 = b'i' - b'a';
     const LETTER_L: u8 = b'l' - b'a';
     const LETTER_O: u8 = b'o' - b'a';
@@ -37,7 +46,7 @@ fn is_letter_bad(letter: u8) -> bool {
 }
 
 /// An eight-letter password.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 struct Password {
     /// The letters of the `Password` where `'a'` is `0` and `'z'` is `25`.
     letters: [u8; 8],
@@ -60,7 +69,7 @@ impl Password {
         }
     }
 
-    /// Cleans the `Password` by incrementing past bad letters.
+    /// Cleans the `Password` by incrementing past invalid letters.
     /// (e.g. `"hijklmno"` becomes `"hjaaaaaa"`).
     fn clean(&mut self) {
         let mut is_cleaning = false;
@@ -68,11 +77,28 @@ impl Password {
         for index in (0..8).rev() {
             if is_cleaning {
                 self.letters[index] = 0;
-            } else if is_letter_bad(self.letters[index]) {
+            } else if is_letter_invalid(self.letters[index]) {
                 self.letters[index] += 1;
                 is_cleaning = true;
             }
         }
+    }
+
+    /// Returns `true` if the `Password` is valid.
+    /// TODO: Also check for pairs.
+    fn is_valid(self) -> bool {
+        let mut has_straight = false;
+
+        // First check if the password has a straight. The window is declared in
+        // reverse because the password is in reverse order in memory.
+        for (c, b, a) in self.letters.windows(3).map(|w| (w[0], w[1], w[2])) {
+            if b == a + 1 && c == a + 2 {
+                has_straight = true;
+                break;
+            }
+        }
+
+        has_straight
     }
 }
 
@@ -109,17 +135,36 @@ fn parse_password(input: &str) -> Option<Password> {
     Some(Password { letters })
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert!(!is_password_valid("hijklmmn"));
+        assert!(!is_password_valid("abbceffg"));
+        assert!(!is_password_valid("abbcegjk"));
+        assert_eq!(part_one("abcdefgh"), "abcdffaa".into());
+        assert_eq!(part_one("ghijklmn"), "ghjaabcc".into());
+    }
 
+    /*
     /// Tests part two.
     #[test]
     fn part_two_works() {}
+    */
+
+    /// Returns `true` is a [`Password`] is valid from a string.
+    fn is_password_valid(input: &str) -> bool {
+        let password = parse_password(input).expect("input should be valid");
+        let mut cleaned_password = password;
+        cleaned_password.clean();
+
+        if password != cleaned_password {
+            return false;
+        }
+
+        password.is_valid()
+    }
 }
-*/
