@@ -7,9 +7,8 @@ Puzzle inputs are not included in this repository by request of the
 [Advent of Code FAQ](https://adventofcode.com/about#faq_copying).
 
 Puzzle inputs are given similar names to the code that solves them. For
-example, the puzzle input for
-`src/advent_of_code_2015/day_01_not_quite_lisp.rs` should be located at
-`inputs/advent_of_code_2015/day_01_not_quite_lisp.txt`.
+example, the puzzle input for `src/advent_of_code_2015/day_08_matchsticks.rs`
+should be located at `inputs/advent_of_code_2015/day_08_matchsticks.txt`.
 
 # Dependencies
 Dependencies are mostly avoided for puzzle solutions, but they are sometimes
