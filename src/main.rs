@@ -52,6 +52,7 @@ define_puzzles! {
         mod day_09_all_in_a_single_night;
         mod day_10_elves_look_elves_say;
         mod day_11_corporate_policy;
+        mod day_12_js_abacus_framework_io;
     }
 }
 
