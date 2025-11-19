@@ -56,21 +56,21 @@ mod tests {
     /// Tests part one.
     #[test]
     fn part_one_works() {
-        assert_eq!(part_one("(())"), Solution::Solved(0));
-        assert_eq!(part_one("()()"), Solution::Solved(0));
-        assert_eq!(part_one("((("), Solution::Solved(3));
-        assert_eq!(part_one("(()(()("), Solution::Solved(3));
-        assert_eq!(part_one("))((((("), Solution::Solved(3));
-        assert_eq!(part_one("())"), Solution::Solved(-1));
-        assert_eq!(part_one("))("), Solution::Solved(-1));
-        assert_eq!(part_one(")))"), Solution::Solved(-3));
-        assert_eq!(part_one(")())())"), Solution::Solved(-3));
+        assert_eq!(part_one("(())"), 0.into());
+        assert_eq!(part_one("()()"), 0.into());
+        assert_eq!(part_one("((("), 3.into());
+        assert_eq!(part_one("(()(()("), 3.into());
+        assert_eq!(part_one("))((((("), 3.into());
+        assert_eq!(part_one("())"), (-1).into());
+        assert_eq!(part_one("))("), (-1).into());
+        assert_eq!(part_one(")))"), (-3).into());
+        assert_eq!(part_one(")())())"), (-3).into());
     }
 
     /// Tests part two.
     #[test]
     fn part_two_works() {
-        assert_eq!(part_two(")"), Solution::Solved(1));
-        assert_eq!(part_two("()())"), Solution::Solved(5));
+        assert_eq!(part_two(")"), 1.into());
+        assert_eq!(part_two("()())"), 5.into());
     }
 }

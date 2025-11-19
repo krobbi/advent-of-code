@@ -1,16 +1,10 @@
 use std::fmt::{self, Display, Formatter};
 
-/// A value stored in a [`Solution`].
-type Value = i32;
-
 /// A solution to a [`Part`][crate::Part].
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub enum Solution {
     /// A solution was found.
-    Solved(Value),
-
-    /// A solution which overflows a [`Value`] was found.
-    Overflowed,
+    Solved(String),
 
     /// A [`Part`][crate::Part] was defined with no solution.
     #[allow(dead_code, reason = "all puzzles may be completed")]
@@ -26,36 +20,37 @@ pub enum Solution {
 
 impl Solution {
     /// Returns `true` if the `Solution` is applicable for benchmarking.
-    pub fn is_benchable(self) -> bool {
-        self != Self::Incomplete && self != Self::ParseError
+    pub fn is_benchable(&self) -> bool {
+        matches!(self, Self::Solved(_) | Self::SolveError)
     }
 }
 
 impl<T: IntoSolution> From<T> for Solution {
     fn from(value: T) -> Self {
-        match value.try_into() {
-            Ok(value) => Self::Solved(value),
-            Err(_) => Self::Overflowed,
-        }
+        value.into_solution()
     }
 }
 
 impl Display for Solution {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let message = match self {
-            Self::Solved(value) => return value.fmt(f),
+            Self::Solved(value) => return write!(f, "[{value}]"),
             Self::Incomplete => "incomplete",
-            Self::Overflowed => "overflowed",
-            Self::ParseError => "failed to parse puzzle input",
-            Self::SolveError => "failed to solve puzzle",
+            Self::ParseError => "parse error",
+            Self::SolveError => "solve error",
         };
 
         f.write_str(message)
     }
 }
 
-/// A trait for integers which may be converted to a [`Solution`].
-trait IntoSolution: TryInto<Value> {}
+/// A trait for values which may be converted to [`Solution`]s.
+trait IntoSolution: ToString + Sized {
+    /// Consumes the value and converts it to a [`Solution`].
+    fn into_solution(self) -> Solution {
+        Solution::Solved(self.to_string())
+    }
+}
 
 impl IntoSolution for i8 {}
 impl IntoSolution for u8 {}
@@ -67,3 +62,15 @@ impl IntoSolution for i64 {}
 impl IntoSolution for u64 {}
 impl IntoSolution for isize {}
 impl IntoSolution for usize {}
+
+impl IntoSolution for &str {
+    fn into_solution(self) -> Solution {
+        Solution::Solved(self.to_owned())
+    }
+}
+
+impl IntoSolution for String {
+    fn into_solution(self) -> Solution {
+        Solution::Solved(self)
+    }
+}

@@ -83,16 +83,16 @@ mod tests {
     /// Tests part one.
     #[test]
     fn part_one_works() {
-        assert_eq!(part_one(">"), Solution::Solved(2));
-        assert_eq!(part_one("^>v<"), Solution::Solved(4));
-        assert_eq!(part_one("^v^v^v^v^v"), Solution::Solved(2));
+        assert_eq!(part_one(">"), 2.into());
+        assert_eq!(part_one("^>v<"), 4.into());
+        assert_eq!(part_one("^v^v^v^v^v"), 2.into());
     }
 
     /// Tests part two.
     #[test]
     fn part_two_works() {
-        assert_eq!(part_two("^v"), Solution::Solved(3));
-        assert_eq!(part_two("^>v<"), Solution::Solved(3));
-        assert_eq!(part_two("^v^v^v^v^v"), Solution::Solved(11));
+        assert_eq!(part_two("^v"), 3.into());
+        assert_eq!(part_two("^>v<"), 3.into());
+        assert_eq!(part_two("^v^v^v^v^v"), 11.into());
     }
 }

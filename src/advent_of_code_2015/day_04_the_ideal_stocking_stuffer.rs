@@ -74,7 +74,7 @@ mod tests {
     /// Tests part one.
     #[test]
     fn part_one_works() {
-        assert_eq!(part_one("abcdef"), Solution::Solved(609_043));
-        assert_eq!(part_one("pqrstuv"), Solution::Solved(1_048_970));
+        assert_eq!(part_one("abcdef"), 609_043.into());
+        assert_eq!(part_one("pqrstuv"), 1_048_970.into());
     }
 }

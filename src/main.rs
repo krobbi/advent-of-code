@@ -121,7 +121,7 @@ fn solve_part(part: Part, input: &str) {
     let bench = Instant::now();
     let solution = part(input);
     let duration = bench.elapsed();
-    print!("[{solution}]");
+    print!("{solution}");
 
     if solution.is_benchable() {
         print!(" in {duration:?}");
