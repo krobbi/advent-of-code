@@ -91,6 +91,11 @@ impl Password {
         }
     }
 
+    /// Returns `true` if the `Password` is valid, ignoring invalid letters.
+    fn is_valid(self) -> bool {
+        self.has_straight() && self.has_pairs()
+    }
+
     /// Returns `true` if the `Password` has a straight of three letters.
     fn has_straight(self) -> bool {
         // The window is declared in reverse because the password is in reverse
@@ -116,11 +121,6 @@ impl Password {
         }
 
         false
-    }
-
-    /// Returns `true` if the `Password` is valid, ignoring invalid letters.
-    fn is_valid(self) -> bool {
-        self.has_straight() && self.has_pairs()
     }
 }
 
