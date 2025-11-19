@@ -2,7 +2,7 @@
 //!
 //! [link]: https://adventofcode.com/2015/day/11
 
-use std::fmt::{self, Display, Formatter, Write as _};
+use std::fmt::{self, Display, Formatter};
 
 use crate::Solution;
 
@@ -32,13 +32,9 @@ struct Password {
 
 impl Display for Password {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mut string = String::with_capacity(8);
-
-        for letter in self.letters {
-            let _ = string.write_char((letter + b'a').into());
-        }
-
-        f.write_str(&string)
+        let mut chars = self.letters.map(|l| l + b'a');
+        chars.reverse();
+        f.write_str(str::from_utf8(&chars).expect("password should be valid UTF-8"))
     }
 }
 
@@ -63,6 +59,7 @@ fn parse_password(input: &str) -> Option<Password> {
         letters[index] = letter - b'a';
     }
 
+    letters.reverse();
     Some(Password { letters })
 }
 
