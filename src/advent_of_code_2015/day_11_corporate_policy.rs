@@ -19,14 +19,6 @@ pub fn part_one(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    println!();
-    println!("{password}");
-
-    for _ in 0..30 {
-        password.increment();
-        println!("{password}");
-    }
-
     Solution::default()
 }
 
@@ -34,6 +26,14 @@ pub fn part_one(input: &str) -> Solution {
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// Returns `true` if a letter is not allowed in a `Password`.
+fn is_letter_bad(letter: u8) -> bool {
+    const LETTER_I: u8 = b'i' - b'a';
+    const LETTER_L: u8 = b'l' - b'a';
+    const LETTER_O: u8 = b'o' - b'a';
+    matches!(letter, LETTER_I | LETTER_L | LETTER_O)
 }
 
 /// An eight-letter password.
@@ -56,6 +56,21 @@ impl Password {
             } else {
                 self.letters[index] += 1;
                 break;
+            }
+        }
+    }
+
+    /// Cleans the `Password` by incrementing past bad letters.
+    /// (e.g. `"hijklmno"` becomes `"hjaaaaaa"`).
+    fn clean(&mut self) {
+        let mut is_cleaning = false;
+
+        for index in (0..8).rev() {
+            if is_cleaning {
+                self.letters[index] = 0;
+            } else if is_letter_bad(self.letters[index]) {
+                self.letters[index] += 1;
+                is_cleaning = true;
             }
         }
     }
