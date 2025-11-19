@@ -86,17 +86,33 @@ fn is_value_red(value: &JsonValue) -> bool {
     }
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(part_one("[1,2,3]"), 6.into());
+        assert_eq!(part_one("{\"a\":2,\"b\":4}"), 6.into());
+        assert_eq!(part_one("[[[3]]]"), 3.into());
+        assert_eq!(part_one("{\"a\":{\"b\":4},\"c\":-1}"), 3.into());
+        assert_eq!(part_one("{\"a\":[-1,1]}"), 0.into());
+        assert_eq!(part_one("[-1,{\"a\":1}]"), 0.into());
+        assert_eq!(part_one("[]"), 0.into());
+        assert_eq!(part_one("{}"), 0.into());
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        assert_eq!(part_two("[1,2,3]"), 6.into());
+        assert_eq!(part_two("[1,{\"c\":\"red\",\"b\":2},3]"), 4.into());
+        assert_eq!(
+            part_two("{\"d\":\"red\",\"e\":[1,2,3,4],\"f\":5}"),
+            0.into()
+        );
+
+        assert_eq!(part_two("[1,\"red\",5]"), 6.into());
+    }
 }
-*/
