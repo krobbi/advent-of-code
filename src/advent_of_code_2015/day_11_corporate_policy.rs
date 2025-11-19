@@ -8,12 +8,25 @@ use crate::Solution;
 
 /// Solves part one.
 pub fn part_one(input: &str) -> Solution {
-    let Some(password) = parse_password(input) else {
+    // Santa needs to change his password. Usually he increments it to get a new
+    // one, but the new Security-Elf has some rules about passwords:
+    // * Must contain a straight of 3 letters (e.g. "abc")
+    // * Must not contain "i", "o", or "l"
+    // * Must contain at lest two different pairs of letters
+    //   (e.g. "aa" and "bb")
+    // The next password that meets these rules must be found.
+    let Some(mut password) = parse_password(input) else {
         return Solution::ParseError;
     };
 
-    println!("{password:?}");
+    println!();
     println!("{password}");
+
+    for _ in 0..30 {
+        password.increment();
+        println!("{password}");
+    }
+
     Solution::default()
 }
 
@@ -24,10 +37,28 @@ pub fn part_two(input: &str) -> Solution {
 }
 
 /// An eight-letter password.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 struct Password {
-    /// The letters of the `Password` where "a" is 0 and "z" is 25.
+    /// The letters of the `Password` where `'a'` is `0` and `'z'` is `25`.
     letters: [u8; 8],
+}
+
+impl Password {
+    /// Increments the `Password`.
+    fn increment(&mut self) {
+        let mut index = 0;
+
+        loop {
+            // Carry to the next letter if it is "z".
+            if self.letters[index] == 25 {
+                self.letters[index] = 0;
+                index = (index + 1) % 8;
+            } else {
+                self.letters[index] += 1;
+                break;
+            }
+        }
+    }
 }
 
 impl Display for Password {
