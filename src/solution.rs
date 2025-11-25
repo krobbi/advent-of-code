@@ -1,20 +1,20 @@
 use std::fmt::{self, Display, Formatter};
 
-/// A solution to a [`Part`][crate::Part].
+/// A solution to a [`Part`][crate::data::Part].
 #[derive(Debug, Default, PartialEq, Eq)]
 pub enum Solution {
     /// A solution was found.
     Solved(String),
 
-    /// A [`Part`][crate::Part] was defined with no solution.
+    /// A [`Part`][crate::data::Part] was defined with no solution.
     #[allow(dead_code, reason = "all puzzles may be completed")]
     #[default]
     Incomplete,
 
-    /// A [`Part`][crate::Part] could not parse its puzzle input.
+    /// A [`Part`][crate::data::Part] could not parse its puzzle input.
     ParseError,
 
-    /// A [`Part`][crate::Part] entered an unsolvable state.
+    /// A [`Part`][crate::data::Part] entered an unsolvable state.
     SolveError,
 }
 
