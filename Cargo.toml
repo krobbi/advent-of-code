@@ -6,6 +6,7 @@ repository = "https://github.com/krobbi/advent-of-code"
 publish = false
 
 [dependencies]
+clap = { version = "4.5.53", features = ["derive"] }
 json = "0.12.4"
 md5 = "0.8.0"
 

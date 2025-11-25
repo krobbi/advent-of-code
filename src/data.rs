@@ -59,6 +59,17 @@ impl Event {
         }
     }
 
+    /// Returns `true` if the `Event` has a day.
+    pub fn has_day(&self, day: u8) -> bool {
+        (1..=self.day_count()).contains(&day)
+    }
+
+    /// Returns a reference to a [`Puzzle`] from its day. This function returns
+    /// [`None`] if the [`Puzzle`] does not exist.
+    pub fn puzzle(&self, day: u8) -> Option<&Puzzle> {
+        self.puzzles.iter().find(|p| p.day == day)
+    }
+
     /// Returns an [`Iterator`] over the [`Puzzle`]s.
     pub fn puzzles(&self) -> impl Iterator<Item = &Puzzle> {
         self.puzzles.iter()
@@ -84,17 +95,6 @@ impl Event {
     /// Returns the number of days in the `Event`.
     fn day_count(&self) -> u8 {
         year_event_day_count(self.year)
-    }
-
-    /// Returns `true` if the `Event` has a day.
-    fn has_day(&self, day: u8) -> bool {
-        (1..=self.day_count()).contains(&day)
-    }
-
-    /// Returns a reference to a [`Puzzle`] from its day. This function returns
-    /// [`None`] if the [`Puzzle`] does not exist.
-    fn puzzle(&self, day: u8) -> Option<&Puzzle> {
-        self.puzzles.iter().find(|p| p.day == day)
     }
 }
 

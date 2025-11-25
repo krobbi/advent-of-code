@@ -1,3 +1,4 @@
+mod config;
 mod data;
 mod solution;
 
@@ -10,7 +11,10 @@ use std::{
     time::Instant,
 };
 
-use crate::data::{Data, Event, Part, Puzzle};
+use crate::{
+    config::Config,
+    data::{Data, Event, Part, Puzzle},
+};
 
 /// Defines the [`Data`].
 macro_rules! define_data {
@@ -64,18 +68,36 @@ define_data! {
 /// Solves every completed [`Puzzle`].
 fn main() {
     let data = create_data();
+    let config = Config::new();
 
     for event in data.events() {
-        run_event(event);
+        run_event(event, &config);
     }
 }
 
-/// Runs an [`Event`] and prints its result.
-fn run_event(event: &Event) {
+/// Runs an [`Event`] with [`Config`] and prints its result.
+fn run_event(event: &Event, config: &Config) {
     println!("Advent of Code {}:", event.year);
 
-    for puzzle in event.puzzles() {
-        run_puzzle(puzzle);
+    match config.day_filter() {
+        None => {
+            for puzzle in event.puzzles() {
+                run_puzzle(puzzle);
+            }
+        }
+        Some(day) => {
+            if !event.has_day(day) {
+                println!("  Error - Day {day:02} does not exist");
+                return;
+            }
+
+            let Some(puzzle) = event.puzzle(day) else {
+                println!("  Day {day:02} - Incomplete");
+                return;
+            };
+
+            run_puzzle(puzzle);
+        }
     }
 }
 
@@ -98,8 +120,7 @@ fn run_puzzle(puzzle: &Puzzle) {
     let input = match fs::read_to_string(input_path) {
         Ok(input) => input,
         Err(error) => {
-            println!("Error");
-            eprintln!("Could not read puzzle input: {error}");
+            println!("Error - Could not read puzzle input: {error}");
             return;
         }
     };
