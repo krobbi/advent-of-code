@@ -52,16 +52,16 @@ trait IntoSolution: ToString + Sized {
     }
 }
 
-impl IntoSolution for i8 {}
 impl IntoSolution for u8 {}
-impl IntoSolution for i16 {}
+impl IntoSolution for i8 {}
 impl IntoSolution for u16 {}
-impl IntoSolution for i32 {}
+impl IntoSolution for i16 {}
 impl IntoSolution for u32 {}
-impl IntoSolution for i64 {}
+impl IntoSolution for i32 {}
 impl IntoSolution for u64 {}
-impl IntoSolution for isize {}
+impl IntoSolution for i64 {}
 impl IntoSolution for usize {}
+impl IntoSolution for isize {}
 
 impl IntoSolution for &str {
     fn into_solution(self) -> Solution {
