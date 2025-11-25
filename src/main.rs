@@ -3,7 +3,7 @@ mod solution;
 pub use crate::solution::Solution;
 
 use std::{
-    env, fs,
+    fs,
     io::{self, Write as _},
     path::Path,
     time::Instant,
@@ -64,16 +64,9 @@ type Puzzle = (Part, Part);
 
 /// Solves every completed [`Puzzle`].
 fn main() {
-    let day_filter = parse_args();
-
     for (year, data) in YEARS {
         for (day, (path, puzzle)) in data.iter().copied().enumerate() {
             let day = u8::try_from(day + 1).expect("day should not be more than 25");
-
-            if day_filter.is_some_and(|d| d != day) {
-                continue;
-            }
-
             print!("Advent of Code {year}, Day {day}: ");
             flush_stdout();
 
@@ -102,11 +95,6 @@ fn main() {
             println!();
         }
     }
-}
-
-/// Parses an optional day filter from command line arguments.
-fn parse_args() -> Option<u8> {
-    env::args().nth(1)?.parse().ok()
 }
 
 /// Flushes the standard output stream.
