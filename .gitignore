@@ -1,17 +1,16 @@
 # Ignore:
-ignore/*
-inputs/*
-*.bat
+ignore/
+inputs/
 
 # Rust:
-target/*
+target/
 *.exe
 *.pdb
 *.rs.bk
 
 # IDE:
-.idea/*
-.vscode/*
+.idea/
+.vscode/
 *.code-workspace
 *.sublime-project
 *.sublime-workspace
