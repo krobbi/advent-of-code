@@ -10,6 +10,46 @@ Puzzle inputs are given similar names to the code that solves them. For
 example, the puzzle input for `src/advent_of_code_2015/day_08_matchsticks.rs`
 should be located at `inputs/advent_of_code_2015/day_08_matchsticks.txt`.
 
+# Usage
+The solutions are run from the command line:
+```shell
+cargo run --release -- [YEAR] [DAY]
+```
+
+## Arguments
+| Argument | Usage       |
+| :------- | :---------- |
+| `[YEAR]` | Filter year |
+| `[DAY]`  | Filter day  |
+
+The solutions to run can optionally be filtered to a single year, or filtered
+further to a single day. This can significantly reduce the time taken to run
+the program.
+
+## Options
+| Short | Long     | Usage      |
+| :---- | :------- | :--------- |
+| `-h`  | `--help` | Print help |
+
+If the `--help` flag is set, then help information will be printed but no
+action will be performed.
+
+### Examples
+Run all of the completed solutions for all years:
+```shell
+cargo run --release
+```
+
+Run all of the completed solutions for 2025:
+```shell
+cargo run --release -- 2025
+```
+
+Run the solution for day 4 of 2015:
+```shell
+cargo run --release -- 2015 4
+```
+
 # Dependencies
 Dependencies are mostly avoided for puzzle solutions, but they are sometimes
 used to avoid "reinventing the wheel":

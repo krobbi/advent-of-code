@@ -13,6 +13,12 @@ impl Data {
         Self::default()
     }
 
+    /// Returns a reference to an [`Event`] from its year. This function returns
+    /// [`None`] if the [`Event`] does not exist.
+    pub fn event(&self, year: u16) -> Option<&Event> {
+        self.events.iter().find(|e| e.year == year)
+    }
+
     /// Returns an [`Iterator`] over the [`Event`]s.
     pub fn events(&self) -> impl Iterator<Item = &Event> {
         self.events.iter()
@@ -32,12 +38,6 @@ impl Data {
         );
 
         self.events.push(event);
-    }
-
-    /// Returns a reference to an [`Event`] from its year. This function returns
-    /// [`None`] if the [`Event`] does not exist.
-    fn event(&self, year: u16) -> Option<&Event> {
-        self.events.iter().find(|e| e.year == year)
     }
 }
 

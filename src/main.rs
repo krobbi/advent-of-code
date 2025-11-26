@@ -63,6 +63,16 @@ define_data! {
         11: day_11_corporate_policy,
         12: day_12_js_abacus_framework_io,
     },
+    2016: advent_of_code_2016 {},
+    2017: advent_of_code_2017 {},
+    2018: advent_of_code_2018 {},
+    2019: advent_of_code_2019 {},
+    2020: advent_of_code_2020 {},
+    2021: advent_of_code_2021 {},
+    2022: advent_of_code_2022 {},
+    2023: advent_of_code_2023 {},
+    2024: advent_of_code_2024 {},
+    2025: advent_of_code_2025 {},
 }
 
 /// Solves every completed [`Puzzle`].
@@ -70,8 +80,20 @@ fn main() {
     let data = create_data();
     let config = Config::new();
 
-    for event in data.events() {
-        run_event(event, &config);
+    match config.year_filter() {
+        None => {
+            for event in data.events() {
+                run_event(event, &config);
+            }
+        }
+        Some(year) => {
+            let Some(event) = data.event(year) else {
+                println!("Error - Advent of Code {year} does not exist");
+                return;
+            };
+
+            run_event(event, &config);
+        }
     }
 }
 
@@ -81,8 +103,15 @@ fn run_event(event: &Event, config: &Config) {
 
     match config.day_filter() {
         None => {
+            let mut is_no_day_complete = true;
+
             for puzzle in event.puzzles() {
                 run_puzzle(puzzle);
+                is_no_day_complete = false;
+            }
+
+            if is_no_day_complete {
+                println!("  Incomplete");
             }
         }
         Some(day) => {
@@ -113,14 +142,14 @@ fn run_puzzle(puzzle: &Puzzle) {
     );
 
     if !input_path.is_file() {
-        println!("Puzzle input missing - {}", input_path.display());
+        println!("Add puzzle input at '{}'", input_path.display());
         return;
     }
 
     let input = match fs::read_to_string(input_path) {
         Ok(input) => input,
         Err(error) => {
-            println!("Error - Could not read puzzle input: {error}");
+            println!("Error - Could not read puzzle input - {error}");
             return;
         }
     };

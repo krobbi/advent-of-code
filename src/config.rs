@@ -14,9 +14,14 @@ impl Config {
         }
     }
 
+    /// Returns the optional year filter.
+    pub fn year_filter(&self) -> Option<u16> {
+        self.args.year
+    }
+
     /// Returns the optional day filter.
     pub fn day_filter(&self) -> Option<u8> {
-        self.args.day_filter
+        self.args.day
     }
 }
 
@@ -24,7 +29,11 @@ impl Config {
 #[derive(Parser)]
 #[command(about)]
 struct Args {
+    /// The optional year filter.
+    #[arg(help = "Filter year")]
+    year: Option<u16>,
+
     /// The optional day filter.
-    #[arg(id = "day", help = "Filter day", short, long)]
-    day_filter: Option<u8>,
+    #[arg(help = "Filter day")]
+    day: Option<u8>,
 }
