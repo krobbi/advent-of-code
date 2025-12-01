@@ -11,7 +11,14 @@ pub fn part_one(input: &str) -> Solution {
     // 99. The dial starts at 50 and we have a document with a list of rotations
     // to open the safe. The actual password in the safe is a decoy. The real
     // password is the number of times the dial points to 0 after a rotation.
-    let _ = input;
+    let Some(rotations) = parse_document(input) else {
+        return Solution::ParseError;
+    };
+
+    for rotation in rotations {
+        println!("{rotation}");
+    }
+
     Solution::default()
 }
 
@@ -19,6 +26,31 @@ pub fn part_one(input: &str) -> Solution {
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// Parses a boxed slice of rotations from a document. This function returns
+/// [`None`] if the document could not be parsed.
+fn parse_document(document: &str) -> Option<Box<[i16]>> {
+    let mut rotations = Vec::new();
+
+    for rotation in document.lines() {
+        rotations.push(parse_rotation(rotation)?);
+    }
+
+    Some(rotations.into())
+}
+
+/// Parses a rotation. This function returns [`None`] if the rotation could not
+/// be parsed.
+fn parse_rotation(rotation: &str) -> Option<i16> {
+    let sign = match rotation.chars().next()? {
+        'L' => -1,
+        'R' => 1,
+        _ => return None,
+    };
+
+    let magnitude = rotation[1..].parse::<i16>().ok()?;
+    Some(sign * magnitude)
 }
 
 /*
