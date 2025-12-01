@@ -19,9 +19,7 @@ pub fn part_one(input: &str) -> Solution {
     let mut zero_hits = 0;
 
     for rotation in rotations {
-        // Add 1000 (multiple of 100) to the rotation because to avoid negative
-        // modulo.
-        dial = (dial + rotation + 1000) % 100;
+        dial = (dial + rotation).rem_euclid(100);
 
         if dial == 0 {
             zero_hits += 1;
@@ -42,27 +40,22 @@ pub fn part_two(input: &str) -> Solution {
     let mut dial = 50;
     let mut zero_clicks = 0;
 
-    for mut rotation in rotations {
-        // Not a very nice solution, couldn't seem to get the right formula.
-        while rotation > 0 {
-            rotation -= 1;
-            dial += 1;
+    for rotation in rotations {
+        let full_rotations = rotation.abs() / 100;
+        zero_clicks += full_rotations;
 
-            if dial == 100 {
-                dial = 0;
-                zero_clicks += 1;
-            }
+        if dial == 0 {
+            // If the dial started on zero, then anything less than a full
+            // rotation will not cause another click through zero.
+            dial = (dial + rotation).rem_euclid(100);
+            continue;
         }
 
-        while rotation < 0 {
-            rotation += 1;
-            dial -= 1;
+        dial += rotation - full_rotations * 100 * rotation.signum();
 
-            if dial == 0 {
-                zero_clicks += 1;
-            } else if dial == -1 {
-                dial = 99;
-            }
+        if dial <= 0 || dial > 99 {
+            zero_clicks += 1;
+            dial = dial.rem_euclid(100);
         }
     }
 
