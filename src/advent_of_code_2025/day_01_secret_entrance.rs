@@ -33,8 +33,40 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // We used the wrong method for finding the password. We actually need to
+    // count the number of clicks of the dial that point to 0.
+    let Some(rotations) = parse_document(input) else {
+        return Solution::ParseError;
+    };
+
+    let mut dial = 50;
+    let mut zero_clicks = 0;
+
+    for mut rotation in rotations {
+        // Not a very nice solution, couldn't seem to get the right formula.
+        while rotation > 0 {
+            rotation -= 1;
+            dial += 1;
+
+            if dial == 100 {
+                dial = 0;
+                zero_clicks += 1;
+            }
+        }
+
+        while rotation < 0 {
+            rotation += 1;
+            dial -= 1;
+
+            if dial == 0 {
+                zero_clicks += 1;
+            } else if dial == -1 {
+                dial = 99;
+            }
+        }
+    }
+
+    zero_clicks.into()
 }
 
 /// Parses a boxed slice of rotations from a document. This function returns
