@@ -94,17 +94,31 @@ fn parse_rotation(rotation: &str) -> Option<i16> {
     Some(sign * magnitude)
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// The example document for testing.
+    static DOCUMENT: &str = "L68\n\
+        L30\n\
+        R48\n\
+        L5\n\
+        R60\n\
+        L55\n\
+        L1\n\
+        L99\n\
+        R14\n\
+        L82\n";
+
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(part_one(DOCUMENT), 3.into());
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        assert_eq!(part_two(DOCUMENT), 6.into());
+    }
 }
-*/
