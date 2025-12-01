@@ -1,6 +1,7 @@
 # Ignore:
 ignore/
 inputs/
+*.txt
 
 # Rust:
 target/
