@@ -10,54 +10,34 @@ Puzzle inputs are given similar names to the code that solves them. For
 example, the puzzle input for `src/advent_of_code_2015/day_08_matchsticks.rs`
 should be located at `inputs/advent_of_code_2015/day_08_matchsticks.txt`.
 
-# Usage
+## Usage
 The solutions are run from the command line:
 ```shell
 cargo run --release -- [YEAR] [DAY]
 ```
 
-## Arguments
+### Arguments
 | Argument | Usage       |
 | :------- | :---------- |
 | `[YEAR]` | Filter year |
 | `[DAY]`  | Filter day  |
 
-The solutions to run can optionally be filtered to a single year, or filtered
-further to a single day. This can significantly reduce the time taken to run
-the program.
+The solutions can optionally be filtered to a single year, or filtered further
+to a single day.
 
-## Options
+### Options
 | Short | Long     | Usage      |
 | :---- | :------- | :--------- |
 | `-h`  | `--help` | Print help |
 
-If the `--help` flag is set, then help information will be printed but no
-action will be performed.
-
-### Examples
-Run all of the completed solutions for all years:
-```shell
-cargo run --release
-```
-
-Run all of the completed solutions for 2025:
-```shell
-cargo run --release -- 2025
-```
-
-Run the solution for day 4 of 2015:
-```shell
-cargo run --release -- 2015 4
-```
-
-# Dependencies
+## Dependencies
 Dependencies are mostly avoided for puzzle solutions, but they are sometimes
 used to avoid "reinventing the wheel":
 * [clap](https://crates.io/crates/clap) - Command line argument parsing
 * [json](https://crates.io/crates/json) - JSON parsing in 2015 day 12
 * [md5](https://crates.io/crates/md5) - MD5 hashing in 2015 day 4
 
-# Credits
+## Credits
 Advent of Code was created by [Eric Wastl](https://was.tl/) and is a registered
 trademark in the United States. This repository is not affiliated with Advent
 of Code or Eric Wastl.
