@@ -15,11 +15,20 @@ pub fn part_one(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
+    let mut dial = 50;
+    let mut zero_hits = 0;
+
     for rotation in rotations {
-        println!("{rotation}");
+        // Add 1000 (multiple of 100) to the rotation because to avoid negative
+        // modulo.
+        dial = (dial + rotation + 1000) % 100;
+
+        if dial == 0 {
+            zero_hits += 1;
+        }
     }
 
-    Solution::default()
+    zero_hits.into()
 }
 
 /// Solves part two.
