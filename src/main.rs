@@ -72,7 +72,9 @@ define_data! {
     2022: advent_of_code_2022 {},
     2023: advent_of_code_2023 {},
     2024: advent_of_code_2024 {},
-    2025: advent_of_code_2025 {},
+    2025: advent_of_code_2025 {
+        01: day_01_secret_entrance,
+    },
 }
 
 /// Solves every completed [`Puzzle`].
