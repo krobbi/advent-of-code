@@ -19,17 +19,38 @@ pub fn part_one(input: &str) -> Solution {
     let mut sum = 0;
 
     for (lower, upper) in ranges {
-        let mut invalid_id = InvalidId::next_from_id(lower);
+        // Find the number of digits in the lower product ID.
+        let digit_count = count_digits(lower);
 
-        loop {
-            let id = invalid_id.as_id();
+        // Find the amount to divide the lower product ID by to get half of its
+        // digits.
+        let half_magnitude = 10u64.pow(digit_count / 2);
 
-            if id > upper {
-                break;
-            }
+        // Find the lowest possible pattern of digits for an invalid product ID
+        // that is greater than or equal to the lower product ID.
+        let mut pattern = if digit_count.is_multiple_of(2) {
+            // If the number of digits is even, then find the most significant
+            // and least significant halves of the lower product ID.
+            let (big_digits, little_digits) = (lower / half_magnitude, lower % half_magnitude);
 
-            sum += id;
-            invalid_id.half += 1;
+            // If the least significant digits are greater than the most
+            // significant digits, then the pattern is below the range and
+            // should be incremented by one.
+            big_digits + u64::from(little_digits > big_digits)
+        } else {
+            // If the number of digits is odd, then start with the lowest
+            // possible pattern for a product ID with one more digit.
+            half_magnitude
+        };
+
+        // Add up every sequence of repeating digits until the upper product ID
+        // is reached.
+        let mut sequence = append_pattern(pattern, pattern);
+
+        while sequence <= upper {
+            sum += sequence;
+            pattern += 1;
+            sequence = append_pattern(pattern, pattern);
         }
     }
 
@@ -38,24 +59,26 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    // Now a product is invalid if it only contains a sequence of repeated
-    // digits.
+    // Now a product ID is invalid if it contains only a sequence of digits
+    // repeated 2 or more times.
     let Some(ranges) = parse_product_id_ranges(input) else {
         return Solution::ParseError;
     };
 
-    // Some repeated digits may be found twice, for example "1" and "11" are
-    // both repeated in the range "100-2000". This set is created outside the
-    // loop to reduce reallocation.
+    // Some sequences of repeated digits may be found more than once. For
+    // example, "1" and "11" are both repeated in the range "100-2000". This set
+    // collects any duplicates and is created outside of the loop to reduce
+    // allocation.
     let mut found_sequences = HashSet::new();
     let mut sum = 0;
 
     for (lower, upper) in ranges {
-        let max_pattern = upper / 10u64.pow(upper.ilog10() / 2);
+        // The repeated pattern can't be greater than the most significant half
+        // of the upper product ID.
+        let max_pattern = upper / 10u64.pow(count_digits(upper) / 2);
 
         for pattern in 1..=max_pattern {
-            let mut sequence = pattern;
-            sequence = append_pattern(sequence, pattern);
+            let mut sequence = append_pattern(pattern, pattern);
 
             while sequence <= upper {
                 if sequence >= lower {
@@ -66,52 +89,20 @@ pub fn part_two(input: &str) -> Solution {
             }
         }
 
-        sum += found_sequences.iter().sum::<u64>();
-        found_sequences.clear();
+        sum += found_sequences.drain().sum::<u64>();
     }
 
     sum.into()
 }
 
-/// Appends a pattern of digits to a sequence of digits:
+/// Returns the number of digits in a number.
+fn count_digits(number: u64) -> u32 {
+    number.ilog10() + 1
+}
+
+/// Appends a pattern of digits to a sequence of digits.
 fn append_pattern(sequence: u64, pattern: u64) -> u64 {
-    sequence * 10u64.pow(pattern.ilog10() + 1) + pattern
-}
-
-/// An invalid product ID for part one.
-#[derive(Clone, Copy)]
-struct InvalidId {
-    /// The digits of the product ID, repeated over two halves.
-    half: u64,
-}
-
-impl InvalidId {
-    /// Returns the current or next invalid product ID from a product ID.
-    fn next_from_id(id: u64) -> InvalidId {
-        let digit_count = id.ilog10() + 1;
-        let magnitude = 10u64.pow(digit_count / 2);
-
-        let half = if digit_count.is_multiple_of(2) {
-            id / magnitude
-        } else {
-            // If digit count is odd, jump up to the next even set of digits.
-            magnitude
-        };
-
-        let mut invalid_id = InvalidId { half };
-
-        if invalid_id.as_id() < id {
-            invalid_id.half += 1;
-        }
-
-        invalid_id
-    }
-
-    /// Converts the invalid product ID to a full product ID.
-    fn as_id(self) -> u64 {
-        let magnitude = 10u64.pow(self.half.ilog10() + 1);
-        self.half * magnitude + self.half
-    }
+    sequence * 10u64.pow(count_digits(pattern)) + pattern
 }
 
 /// Parses a boxed slice of product ID ranges. This function returns [`None`] if
