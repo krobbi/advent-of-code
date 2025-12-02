@@ -14,17 +14,66 @@ pub fn part_one(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
+    let mut sum = 0;
+
     for (lower, upper) in ranges {
-        println!("{lower} - {upper}");
+        let mut invalid_id = InvalidId::next_from_id(lower);
+
+        loop {
+            let id = invalid_id.as_id();
+
+            if id > upper {
+                break;
+            }
+
+            sum += id;
+            invalid_id.half += 1;
+        }
     }
 
-    Solution::default()
+    sum.into()
 }
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// An invalid product ID for part one.
+#[derive(Clone, Copy)]
+struct InvalidId {
+    /// The digits of the product ID, repeated over two halves.
+    half: u64,
+}
+
+impl InvalidId {
+    /// Returns the current or next invalid product ID from a product ID.
+    fn next_from_id(id: u64) -> InvalidId {
+        let digit_count = id.ilog10() + 1;
+        let magnitude = 10u64.pow(digit_count / 2);
+
+        let half = if digit_count.is_multiple_of(2) {
+            id / magnitude
+        } else {
+            // If digit count is odd, jump up to the next even set of digits.
+            magnitude
+        };
+
+        let mut invalid_id = InvalidId { half };
+
+        if invalid_id.as_id() < id {
+            invalid_id.half += 1;
+        }
+
+        invalid_id
+    }
+
+    /// Converts the invalid product ID to a full product ID.
+    fn as_id(self) -> u64 {
+        let magnitude = 10u64.pow(self.half.ilog10() + 1);
+        self.half * magnitude + self.half
+    }
 }
 
 /// Parses a boxed slice of product ID ranges. This function returns [`None`] if
