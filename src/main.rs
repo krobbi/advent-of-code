@@ -74,6 +74,7 @@ define_data! {
     2024: advent_of_code_2024 {},
     2025: advent_of_code_2025 {
         01: day_01_secret_entrance,
+        02: day_02_gift_shop,
     },
 }
 
