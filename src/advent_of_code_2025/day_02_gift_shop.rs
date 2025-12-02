@@ -2,6 +2,8 @@
 //!
 //! [link]: https://adventofcode.com/2025/day/2
 
+use std::collections::HashSet;
+
 use crate::Solution;
 
 /// Solves part one.
@@ -36,8 +38,44 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // Now a product is invalid if it only contains a sequence of repeated
+    // digits.
+    let Some(ranges) = parse_product_id_ranges(input) else {
+        return Solution::ParseError;
+    };
+
+    // Some repeated digits may be found twice, for example "1" and "11" are
+    // both repeated in the range "100-2000". This set is created outside the
+    // loop to reduce reallocation.
+    let mut found_sequences = HashSet::new();
+    let mut sum = 0;
+
+    for (lower, upper) in ranges {
+        let max_pattern = upper / 10u64.pow(upper.ilog10() / 2);
+
+        for pattern in 1..=max_pattern {
+            let mut sequence = pattern;
+            sequence = append_pattern(sequence, pattern);
+
+            while sequence <= upper {
+                if sequence >= lower {
+                    found_sequences.insert(sequence);
+                }
+
+                sequence = append_pattern(sequence, pattern);
+            }
+        }
+
+        sum += found_sequences.iter().sum::<u64>();
+        found_sequences.clear();
+    }
+
+    sum.into()
+}
+
+/// Appends a pattern of digits to a sequence of digits:
+fn append_pattern(sequence: u64, pattern: u64) -> u64 {
+    sequence * 10u64.pow(pattern.ilog10() + 1) + pattern
 }
 
 /// An invalid product ID for part one.
