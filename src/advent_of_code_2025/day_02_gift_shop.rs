@@ -137,17 +137,24 @@ fn parse_product_id_range(range: &str) -> Option<(u64, u64)> {
     Some((lower, upper))
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// The example ranges for testing.
+    static RANGES: &str = "11-22,95-115,998-1012,1188511880-1188511890,\
+        222220-222224,1698522-1698528,446443-446449,38593856-38593862,\
+        565653-565659,824824821-824824827,2121212118-2121212124";
+
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(part_one(RANGES), 1_227_775_554.into());
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        assert_eq!(part_two(RANGES), 4_174_379_265u64.into());
+    }
 }
-*/
