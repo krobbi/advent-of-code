@@ -12,7 +12,12 @@ pub fn part_one(input: &str) -> Solution {
     // turned on and the total joltage from the bank is the number as it is read
     // out. The highest joltage from "12345" would be "45", not "54". We need to
     // find the sum of the highest joltages from each bank.
-    let _ = input;
+    let banks = parse_banks(input);
+
+    for bank in banks {
+        println!("{bank:?}");
+    }
+
     Solution::default()
 }
 
@@ -20,6 +25,19 @@ pub fn part_one(input: &str) -> Solution {
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// Parses a boxed slice of battery banks from input.
+fn parse_banks(input: &str) -> Box<[Box<[u8]>]> {
+    input.lines().map(parse_bank).collect()
+}
+
+/// Parses a battery bank from a line of input.
+fn parse_bank(line: &str) -> Box<[u8]> {
+    line.chars()
+        .filter(char::is_ascii_digit)
+        .map(|c| u8::try_from(c).expect("character should be ASCII") - b'0')
+        .collect()
 }
 
 /*
