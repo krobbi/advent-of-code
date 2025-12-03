@@ -2,41 +2,58 @@
 //!
 //! [link]: https://adventofcode.com/2025/day/3
 
-use std::ops::Range;
+use std::ops::RangeInclusive;
 
 use crate::Solution;
 
 /// Solves part one.
 pub fn part_one(input: &str) -> Solution {
-    // The elevators to the rest of the North Pole Base are offline. They need
-    // emergency power from battery banks (lines of digits) where each battery
-    // has a joltage rating (single digit). Two batteries from each bank can be
-    // turned on and the total joltage from the bank is the number as it is read
-    // out. The highest joltage from "12345" would be "45", not "54". We need to
-    // find the sum of the highest joltages from each bank.
-    let banks = parse_banks(input);
-    let mut sum = 0;
-
-    for bank in banks {
-        let bank_len = bank.len();
-        let (index, tens) = find_higest_rated_battery(0..bank_len - 1, &bank);
-        let (_, units) = find_higest_rated_battery(index + 1..bank_len, &bank);
-        sum += u16::from(tens * 10 + units);
-    }
-
-    sum.into()
+    // The elevators and escalator to the rest of the North Pole Base are
+    // offline. They need emergency power from battery banks (lines of digits)
+    // where each battery has a joltage rating (single digit). Two batteries
+    // from each bank can be turned on and the total joltage from the bank is
+    // the number as it is read out. The highest joltage from "12345" would be
+    // "45", not "54". We need to find the sum of the highest joltages from each
+    // bank.
+    solve_part(input, 2)
 }
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // The escalator still won't move. The joltage safety limit has been
+    // overridden and now 12 batteries from each bank can be turned on.
+    solve_part(input, 12)
+}
+
+/// Solves a part with a number of batteries.
+fn solve_part(input: &str, battery_count: usize) -> Solution {
+    let banks = parse_banks(input);
+    let mut total_joltage = 0;
+
+    for bank in banks {
+        let mut start_index = 0;
+        let mut end_index = bank.len() - battery_count;
+        let mut bank_joltage = 0;
+
+        for _ in 0..battery_count {
+            let (battery_index, battery_joltage) =
+                find_higest_rated_battery(start_index..=end_index, &bank);
+
+            start_index = battery_index + 1;
+            end_index += 1;
+            bank_joltage = bank_joltage * 10 + u64::from(battery_joltage);
+        }
+
+        total_joltage += bank_joltage;
+    }
+
+    total_joltage.into()
 }
 
 /// Finds the highest rated battery in a battery bank between a range of indices
 /// and returns its index and joltage rating.
-fn find_higest_rated_battery(range: Range<usize>, bank: &[u8]) -> (usize, u8) {
-    let start_index = range.start;
+fn find_higest_rated_battery(range: RangeInclusive<usize>, bank: &[u8]) -> (usize, u8) {
+    let start_index = *range.start();
     let mut best_offset = 0;
     let mut highest_joltage = 0;
 
@@ -83,9 +100,9 @@ mod tests {
         assert_eq!(part_one(INPUT), 357.into());
     }
 
-    /*
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
-    */
+    fn part_two_works() {
+        assert_eq!(part_two(INPUT), 3_121_910_778_619u64.into());
+    }
 }
