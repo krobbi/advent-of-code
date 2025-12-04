@@ -155,17 +155,31 @@ fn parse_grid(input: &str) -> Grid {
     grid
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// The example input for testing.
+    static INPUT: &str = "..@@.@@@@.\n\
+        @@@.@.@.@@\n\
+        @@@@@.@.@@\n\
+        @.@@@@..@.\n\
+        @@.@@@@.@@\n\
+        .@@@@@@@.@\n\
+        .@.@.@.@@@\n\
+        @.@@@.@@@@\n\
+        .@@@@@@@@.\n\
+        @.@.@@@.@.\n";
+
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(part_one(INPUT), 13.into());
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        assert_eq!(part_two(INPUT), 43.into());
+    }
 }
-*/

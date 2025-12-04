@@ -1,14 +1,16 @@
 # Advent of Code
 These are my attempts at solving puzzles from
-[Advent of Code](https://adventofcode.com/) - an annual advent calendar of
-programming puzzles. I am using [Rust](https://rust-lang.org/).
+[Advent of Code](https://adventofcode.com/)
+(an annual advent calendar of programming puzzles) using
+[Rust](https://rust-lang.org/).
 
-Puzzle inputs are not included in this repository by request of the
-[Advent of Code FAQ](https://adventofcode.com/about#faq_copying).
+Puzzle text and inputs are not included in this repository by request of the
+[Advent of Code FAQ](https://adventofcode.com/about#faq_copying). However, the
+example inputs and outputs have been copied for use in unit tests.
 
 Puzzle inputs are given similar names to the code that solves them. For
-example, the puzzle input for `src/advent_of_code_2015/day_08_matchsticks.rs`
-should be located at `inputs/advent_of_code_2015/day_08_matchsticks.txt`.
+example, the puzzle input for `src/advent_of_code_2025/day_03_lobby.rs` should
+be located at `inputs/advent_of_code_2025/day_03_lobby.txt`.
 
 ## Usage
 The solutions are run from the command line:
