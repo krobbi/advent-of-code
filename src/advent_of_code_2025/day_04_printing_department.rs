@@ -13,9 +13,15 @@ pub fn part_one(input: &str) -> Solution {
     // roll locations, so if we find which rolls are reachable
     // (fewer than 4 neighbouring rolls) they may have time to help us.
     let grid = parse_grid(input);
-    assert_eq!(grid.width, 140);
-    assert_eq!(grid.height, 140);
-    Solution::default()
+    let mut reachable_rolls = 0;
+
+    for y in 0..grid.height {
+        for x in 0..grid.width {
+            reachable_rolls += u16::from(grid.is_reachable_roll(x, y));
+        }
+    }
+
+    reachable_rolls.into()
 }
 
 /// Solves part two.
@@ -51,6 +57,30 @@ impl Grid {
     fn insert_roll(&mut self, x: usize, y: usize) {
         let index = self.index(x, y);
         self.cells[index] = true;
+    }
+
+    /// Returns `true` if a roll exists at a position and is reachable for part
+    /// one.
+    fn is_reachable_roll(&self, x: usize, y: usize) -> bool {
+        let index = self.index(x, y);
+
+        if !self.cells[index] {
+            return false; // There is no roll here.
+        }
+
+        // Move the index to the top-left neighbour.
+        let index = index - 1 - (self.width + 2);
+        let mut neighbour_count = 0;
+
+        for y in 0..3 {
+            for x in 0..3 {
+                neighbour_count += u8::from(self.cells[index + x + y * (self.width + 2)]);
+            }
+        }
+
+        // Allow up to 4 neighbours, the cell we are checking should also have
+        // been counted.
+        neighbour_count <= 4
     }
 
     /// Returns the index of a cell from its position.
