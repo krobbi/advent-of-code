@@ -13,21 +13,53 @@ pub fn part_one(input: &str) -> Solution {
     // roll locations, so if we find which rolls are reachable
     // (fewer than 4 neighbouring rolls) they may have time to help us.
     let grid = parse_grid(input);
-    let mut reachable_rolls = 0;
+    let mut reachable_roll_count = 0;
 
+    // We can't use the function from part two because it could make more rolls
+    // reachable as it goes.
     for y in 0..grid.height {
         for x in 0..grid.width {
-            reachable_rolls += u16::from(grid.is_reachable_roll(x, y));
+            reachable_roll_count += u16::from(grid.is_roll_reachable(x, y));
         }
     }
 
-    reachable_rolls.into()
+    reachable_roll_count.into()
 }
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // If a roll of paper is reachable, then it can be removed. The elves want
+    // to know how many rolls can be removed in total.
+    let mut grid = parse_grid(input);
+    let mut total_removed_roll_count = 0;
+
+    // Removing all the reachable rolls may take multiple passes.
+    loop {
+        let pass_removed_roll_count = remove_reachable_rolls_from_grid(&mut grid);
+        total_removed_roll_count += pass_removed_roll_count;
+
+        if pass_removed_roll_count == 0 {
+            break total_removed_roll_count.into();
+        }
+    }
+}
+
+/// Removes some number of reachable paper rolls from a [`Grid`] and returns the
+/// number of rolls that were removed. This function returns `0` if there are no
+/// reachable rolls.
+fn remove_reachable_rolls_from_grid(grid: &mut Grid) -> u16 {
+    let mut removed_roll_count = 0;
+
+    for y in 0..grid.height {
+        for x in 0..grid.width {
+            if grid.is_roll_reachable(x, y) {
+                grid.remove_roll(x, y);
+                removed_roll_count += 1;
+            }
+        }
+    }
+
+    removed_roll_count
 }
 
 /// A grid of paper rolls.
@@ -59,9 +91,14 @@ impl Grid {
         self.cells[index] = true;
     }
 
-    /// Returns `true` if a roll exists at a position and is reachable for part
-    /// one.
-    fn is_reachable_roll(&self, x: usize, y: usize) -> bool {
+    /// Removes a roll of paper from the `Grid` at a position.
+    fn remove_roll(&mut self, x: usize, y: usize) {
+        let index = self.index(x, y);
+        self.cells[index] = false;
+    }
+
+    /// Returns `true` if a roll exists at a position and is reachable.
+    fn is_roll_reachable(&self, x: usize, y: usize) -> bool {
         let index = self.index(x, y);
 
         if !self.cells[index] {
