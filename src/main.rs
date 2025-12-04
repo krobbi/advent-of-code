@@ -76,6 +76,7 @@ define_data! {
         01: day_01_secret_entrance,
         02: day_02_gift_shop,
         03: day_03_lobby,
+        04: day_04_printing_department,
     },
 }
 
