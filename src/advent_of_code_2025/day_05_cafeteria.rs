@@ -32,27 +32,35 @@ pub fn part_two(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    let mut ranges: Vec<_> = ranges.iter().map(IdRange::new).collect();
-    let mut merged_ranges: Vec<IdRange> = Vec::new();
+    let mut pending_ranges: Vec<_> = ranges.iter().map(IdRange::new).collect();
+    let mut non_overlapping_ranges: Vec<IdRange> = Vec::new();
 
-    'merge_range: while let Some(range) = ranges.pop() {
-        let mut checked_ranges = Vec::with_capacity(merged_ranges.len());
+    while let Some(pending_range) = pending_ranges.pop() {
+        let mut merge_index = None;
 
-        while let Some(mut merged_range) = merged_ranges.pop() {
-            if merged_range.merge(&range) {
-                ranges.push(merged_range);
-                merged_ranges.append(&mut checked_ranges);
-                continue 'merge_range;
+        for (index, non_overlapping_range) in non_overlapping_ranges.iter_mut().enumerate() {
+            // Record the index of any non-overlapping range that the pending
+            // range was merged with.
+            if non_overlapping_range.merge(&pending_range) {
+                merge_index = Some(index);
+                break;
             }
-
-            checked_ranges.push(merged_range);
         }
 
-        merged_ranges.append(&mut checked_ranges);
-        merged_ranges.push(range);
+        // If a non-overlapping range was merged, then it may overlap with
+        // existing non-overlapping ranges and should be moved back to the
+        // worklist.
+        match merge_index {
+            None => non_overlapping_ranges.push(pending_range),
+            Some(index) => pending_ranges.push(non_overlapping_ranges.remove(index)),
+        }
     }
 
-    merged_ranges.iter().map(IdRange::size).sum::<u64>().into()
+    non_overlapping_ranges
+        .iter()
+        .map(IdRange::size)
+        .sum::<u64>()
+        .into()
 }
 
 /// A non-overlapping range of ingredient IDs for part two.
@@ -93,8 +101,7 @@ impl IdRange {
 
 /// Parses a database from input. This function returns [`None`] if a database
 /// could not be parsed.
-#[expect(clippy::type_complexity)]
-fn parse_database(input: &str) -> Option<(Box<[RangeInclusive<u64>]>, Box<[u64]>)> {
+fn parse_database(input: &str) -> Option<(Vec<RangeInclusive<u64>>, Vec<u64>)> {
     let mut lines = input.lines();
     let mut ranges = Vec::new();
     let mut ids = Vec::new();
@@ -111,7 +118,7 @@ fn parse_database(input: &str) -> Option<(Box<[RangeInclusive<u64>]>, Box<[u64]>
         ids.push(id);
     }
 
-    Some((ranges.into(), ids.into()))
+    Some((ranges, ids))
 }
 
 /// Parses a range of ingredient IDs from a line of input. This function returns
