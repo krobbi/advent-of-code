@@ -17,15 +17,10 @@ pub fn part_one(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    for range in ranges {
-        println!("{range:?}");
-    }
-
-    for id in ids {
-        println!("{id}");
-    }
-
-    Solution::default()
+    ids.iter()
+        .filter(|i| ranges.iter().any(|r| r.contains(i)))
+        .count()
+        .into()
 }
 
 /// Solves part two.
