@@ -123,17 +123,32 @@ fn parse_range(line: &str) -> Option<RangeInclusive<u64>> {
     Some(start..=end)
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// The example input for testing.
+    static INPUT: &str = "3-5\n\
+        10-14\n\
+        16-20\n\
+        12-18\n\
+        \n\
+        1\n\
+        5\n\
+        8\n\
+        11\n\
+        17\n\
+        32\n";
+
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(part_one(INPUT), 3.into());
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        assert_eq!(part_two(INPUT), 14.into());
+    }
 }
-*/
