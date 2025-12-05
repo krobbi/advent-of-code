@@ -77,6 +77,7 @@ define_data! {
         02: day_02_gift_shop,
         03: day_03_lobby,
         04: day_04_printing_department,
+        05: day_05_cafeteria,
     },
 }
 
