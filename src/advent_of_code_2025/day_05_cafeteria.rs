@@ -25,12 +25,75 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // Now the Elves want to know how many possible ingredient IDs are fresh.
+    // Unfortunately, some of the ranges of fresh ingredient IDs are
+    // overlapping.
+    let Some((ranges, _)) = parse_database(input) else {
+        return Solution::ParseError;
+    };
+
+    let mut ranges: Vec<_> = ranges.iter().map(IdRange::new).collect();
+    let mut merged_ranges: Vec<IdRange> = Vec::new();
+
+    'merge_range: while let Some(range) = ranges.pop() {
+        let mut checked_ranges = Vec::with_capacity(merged_ranges.len());
+
+        while let Some(mut merged_range) = merged_ranges.pop() {
+            if merged_range.merge(&range) {
+                ranges.push(merged_range);
+                merged_ranges.append(&mut checked_ranges);
+                continue 'merge_range;
+            }
+
+            checked_ranges.push(merged_range);
+        }
+
+        merged_ranges.append(&mut checked_ranges);
+        merged_ranges.push(range);
+    }
+
+    merged_ranges.iter().map(IdRange::size).sum::<u64>().into()
+}
+
+/// A non-overlapping range of ingredient IDs for part two.
+struct IdRange {
+    /// The start ingredient ID.
+    start: u64,
+
+    /// The end ingredient ID.
+    end: u64,
+}
+
+impl IdRange {
+    /// Creates a new `IdRange` from a range of ingredient IDs.
+    fn new(range: &RangeInclusive<u64>) -> Self {
+        Self {
+            start: *range.start(),
+            end: *range.end(),
+        }
+    }
+
+    /// Returns the size of the `IdRange` in ingredient IDs.
+    fn size(&self) -> u64 {
+        self.end - self.start + 1
+    }
+
+    /// Attempts to merge another `IdRange` into the `IdRange`. This function
+    /// returns `true` if a merge occurred.
+    fn merge(&mut self, other: &IdRange) -> bool {
+        if other.start <= self.end + 1 && other.end >= self.start - 1 {
+            self.start = self.start.min(other.start);
+            self.end = self.end.max(other.end);
+            true
+        } else {
+            false
+        }
+    }
 }
 
 /// Parses a database from input. This function returns [`None`] if a database
 /// could not be parsed.
+#[expect(clippy::type_complexity)]
 fn parse_database(input: &str) -> Option<(Box<[RangeInclusive<u64>]>, Box<[u64]>)> {
     let mut lines = input.lines();
     let mut ranges = Vec::new();
