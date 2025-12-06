@@ -51,12 +51,49 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
+    // We got the wrong answer. Cephalopod numbers are written in vertically
+    // with the most significant digit at the top. The same columns need to be
+    // solved.
+
+    // Now the input will be treated as a grid of ascii characters for
+    // convenience.
+    let Some(grid) = parse_grid(input) else {
+        return Solution::ParseError;
+    };
+
     Solution::default()
 }
 
-/// Parses a row of numbers from a line of input. This function returns [`None`]
-/// if a row could not be parsed.
+/// A grid of worksheet characters for part two.
+struct Grid {
+    /// The width of the grid in characters.
+    width: usize,
+
+    /// The height of the grid in characters.
+    height: usize,
+
+    /// The characters.
+    chars: Vec<u8>,
+}
+
+impl Grid {
+    /// Creates a new `Grid` with a width and height.
+    fn new(width: usize, height: usize) -> Self {
+        Self {
+            width,
+            height,
+            chars: vec![b' '; width * height],
+        }
+    }
+
+    /// Sets a character in the `Grid`.
+    fn set_char(&mut self, x: usize, y: usize, c: u8) {
+        self.chars[x + y * self.width] = c;
+    }
+}
+
+/// Parses a row of numbers from a line of input for part one. This function
+/// returns [`None`] if a row could not be parsed.
 fn parse_row(line: &str) -> Option<Vec<u64>> {
     let mut row = Vec::new();
 
@@ -66,6 +103,35 @@ fn parse_row(line: &str) -> Option<Vec<u64>> {
     }
 
     Some(row)
+}
+
+/// Parses a [`Grid`] from input for part two. This function returns [`None`] if
+/// a [`Grid`] could not be parsed.
+fn parse_grid(input: &str) -> Option<Grid> {
+    let mut lines = input.lines();
+    let mut rows = vec![lines.next()?.as_bytes().to_owned()];
+    let width = rows[0].len();
+
+    for line in lines {
+        let row = line.as_bytes().to_owned();
+
+        if row.len() != width {
+            return None;
+        }
+
+        rows.push(row);
+    }
+
+    let height = rows.len();
+    let mut grid = Grid::new(width, height);
+
+    for (y, row) in rows.iter().enumerate() {
+        for (x, c) in row.iter().copied().enumerate() {
+            grid.set_char(x, y, c);
+        }
+    }
+
+    Some(grid)
 }
 
 /*
