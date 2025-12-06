@@ -51,12 +51,12 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    // We got the wrong answer. Cephalopod numbers are written in vertically
-    // with the most significant digit at the top. The same columns need to be
-    // solved.
+    // We got the wrong answer. Cephalopod numbers are written right-to-left in
+    // columns with the most significant digit at the top of each column.
 
-    // Now the input will be treated as a grid of ascii characters for
-    // convenience.
+    // Now the input will be treated as a grid of ASCII characters for
+    // convenience. An extra empty column is added to the parsed grid to
+    // simplify processing.
     let Some(grid) = parse_grid(input) else {
         return Solution::ParseError;
     };
@@ -65,6 +65,8 @@ pub fn part_two(input: &str) -> Solution {
     let mut accumulator = 0;
     let mut total = 0;
 
+    // We are moving left-to-right instead of right-to-left, but this does not
+    // matter because addition and multiplication are commutative.
     for x in 0..grid.width {
         operator = match grid.get_char(x, grid.height - 1) {
             b'*' => {
@@ -88,20 +90,15 @@ pub fn part_two(input: &str) -> Solution {
             }
         }
 
-        // Empty column.
+        // If there is an empty column, add the sum or product to the total,
+        // otherwise, keep accumulating it.
         if number == 0 {
             total += accumulator;
-            continue;
-        }
-
-        match operator {
-            Operator::Multiply => accumulator *= number,
-            Operator::Add => accumulator += number,
-        }
-
-        // End of worksheet.
-        if x == grid.width - 1 {
-            total += accumulator;
+        } else {
+            match operator {
+                Operator::Add => accumulator += number,
+                Operator::Multiply => accumulator *= number,
+            }
         }
     }
 
@@ -182,7 +179,9 @@ fn parse_grid(input: &str) -> Option<Grid> {
     }
 
     let height = rows.len();
-    let mut grid = Grid::new(width, height);
+
+    // Add an empty column at the end.
+    let mut grid = Grid::new(width + 1, height);
 
     for (y, row) in rows.iter().enumerate() {
         for (x, c) in row.iter().copied().enumerate() {
@@ -193,17 +192,26 @@ fn parse_grid(input: &str) -> Option<Grid> {
     Some(grid)
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// The example input for testing.
+    static INPUT: &str = "\
+        123 328  51 64.\n\
+        .45 64  387 23.\n\
+        ..6 98  215 314\n\
+        *   +   *   +  \n";
+
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(part_one(&INPUT.replace('.', " ")), 4_277_556.into());
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        assert_eq!(part_two(&INPUT.replace('.', " ")), 3_263_827.into());
+    }
 }
-*/
