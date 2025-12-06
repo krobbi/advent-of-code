@@ -15,12 +15,38 @@ pub fn part_one(input: &str) -> Solution {
     // columns.
     let mut lines = input.lines();
 
-    let Some(sums) = parse_row(lines.next().unwrap_or("*")) else {
-        return Solution::SolveError;
+    let Some(mut sums) = parse_row(lines.next().unwrap_or("*")) else {
+        return Solution::ParseError;
     };
 
-    println!("{sums:?}");
-    Solution::default()
+    let mut products = sums.clone();
+
+    for line in lines {
+        if matches!(line.chars().next(), Some('+' | '*')) {
+            let mut total = 0;
+
+            for (index, operator) in line.split_whitespace().enumerate() {
+                match operator {
+                    "+" => total += sums[index],
+                    "*" => total += products[index],
+                    _ => return Solution::ParseError,
+                }
+            }
+
+            return total.into();
+        }
+
+        let Some(row) = parse_row(line) else {
+            return Solution::ParseError;
+        };
+
+        for (index, number) in row.iter().copied().enumerate() {
+            sums[index] += number;
+            products[index] *= number;
+        }
+    }
+
+    Solution::ParseError
 }
 
 /// Solves part two.
