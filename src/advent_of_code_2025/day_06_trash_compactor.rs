@@ -13,7 +13,13 @@ pub fn part_one(input: &str) -> Solution {
     // with spaces, with a "+" or "*" operator at the end. We need to apply the
     // operators to the corresponding columns, and find the sum of all the
     // columns.
-    let _ = input;
+    let mut lines = input.lines();
+
+    let Some(sums) = parse_row(lines.next().unwrap_or("*")) else {
+        return Solution::SolveError;
+    };
+
+    println!("{sums:?}");
     Solution::default()
 }
 
@@ -21,6 +27,19 @@ pub fn part_one(input: &str) -> Solution {
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// Parses a row of numbers from a line of input. This function returns [`None`]
+/// if a row could not be parsed.
+fn parse_row(line: &str) -> Option<Vec<u64>> {
+    let mut row = Vec::new();
+
+    for number in line.split_whitespace() {
+        let number = number.parse().ok()?;
+        row.push(number);
+    }
+
+    Some(row)
 }
 
 /*
