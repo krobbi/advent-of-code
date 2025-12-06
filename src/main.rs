@@ -78,6 +78,7 @@ define_data! {
         03: day_03_lobby,
         04: day_04_printing_department,
         05: day_05_cafeteria,
+        06: day_06_trash_compactor,
     },
 }
 
