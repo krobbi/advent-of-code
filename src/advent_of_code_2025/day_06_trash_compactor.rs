@@ -61,7 +61,61 @@ pub fn part_two(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    Solution::default()
+    let mut operator = Operator::default();
+    let mut accumulator = 0;
+    let mut total = 0;
+
+    for x in 0..grid.width {
+        operator = match grid.get_char(x, grid.height - 1) {
+            b'*' => {
+                accumulator = 1;
+                Operator::Multiply
+            }
+            b'+' => {
+                accumulator = 0;
+                Operator::Add
+            }
+            _ => operator,
+        };
+
+        let mut number = 0;
+
+        for y in 0..grid.height - 1 {
+            let c = grid.get_char(x, y);
+
+            if c.is_ascii_digit() {
+                number = number * 10 + u64::from(grid.get_char(x, y) - b'0');
+            }
+        }
+
+        // Empty column.
+        if number == 0 {
+            total += accumulator;
+            continue;
+        }
+
+        match operator {
+            Operator::Multiply => accumulator *= number,
+            Operator::Add => accumulator += number,
+        }
+
+        // End of worksheet.
+        if x == grid.width - 1 {
+            total += accumulator;
+        }
+    }
+
+    total.into()
+}
+
+/// An operator used in cephalopod homework.
+#[derive(Default)]
+#[repr(u8)]
+enum Operator {
+    #[default]
+    Multiply = b'*',
+
+    Add = b'+',
 }
 
 /// A grid of worksheet characters for part two.
@@ -89,6 +143,11 @@ impl Grid {
     /// Sets a character in the `Grid`.
     fn set_char(&mut self, x: usize, y: usize, c: u8) {
         self.chars[x + y * self.width] = c;
+    }
+
+    /// Returns a character from the `Grid`.
+    fn get_char(&self, x: usize, y: usize) -> u8 {
+        self.chars[x + y * self.width]
     }
 }
 
