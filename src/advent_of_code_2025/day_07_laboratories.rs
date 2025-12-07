@@ -41,8 +41,30 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // The broken manifold is actually a quantum manifold. The tachyon beam
+    // actually splits between different timelines at each splitter. We need to
+    // find how many timelines (paths through the manifold) there are.
+    let Some(manifold) = parse_manifold(input) else {
+        return Solution::ParseError;
+    };
+
+    // Instead of tracking whether or not a beam exists, we track how many
+    // timelines could lead to a beam existing.
+    let mut beams = vec![0; manifold.width].into_boxed_slice();
+    beams[manifold.start_x] = 1;
+
+    for y in 1..manifold.height {
+        for x in 0..manifold.width {
+            if manifold.has_splitter(x, y) {
+                let split_beam_count = beams[x];
+                beams[x - 1] += split_beam_count;
+                beams[x] = 0;
+                beams[x + 1] += split_beam_count;
+            }
+        }
+    }
+
+    beams.iter().sum::<u64>().into()
 }
 
 /// A tachyon manifold.
@@ -107,17 +129,38 @@ fn parse_manifold(input: &str) -> Option<Manifold> {
     Some(manifold)
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// The example input for testing.
+    static INPUT: &str = "\
+        .......S.......\n\
+        ...............\n\
+        .......^.......\n\
+        ...............\n\
+        ......^.^......\n\
+        ...............\n\
+        .....^.^.^.....\n\
+        ...............\n\
+        ....^.^...^....\n\
+        ...............\n\
+        ...^.^...^.^...\n\
+        ...............\n\
+        ..^...^.....^..\n\
+        ...............\n\
+        .^.^.^.^.^...^.\n\
+        ...............\n";
+
+    /*
     /// Tests part one.
     #[test]
     fn part_one_works() {}
+    */
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        assert_eq!(part_two(INPUT), 40.into());
+    }
 }
-*/
