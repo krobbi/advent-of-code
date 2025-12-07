@@ -42,8 +42,8 @@ pub fn part_one(input: &str) -> Solution {
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
     // The broken manifold is actually a quantum manifold. The tachyon beam
-    // actually splits between different timelines at each splitter. We need to
-    // find how many timelines (paths through the manifold) there are.
+    // splits between different timelines at each splitter. We need to find how
+    // many timelines (paths through the manifold) there are.
     let Some(manifold) = parse_manifold(input) else {
         return Solution::ParseError;
     };
@@ -152,11 +152,11 @@ mod tests {
         .^.^.^.^.^...^.\n\
         ...............\n";
 
-    /*
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
-    */
+    fn part_one_works() {
+        assert_eq!(part_one(INPUT), 21.into());
+    }
 
     /// Tests part two.
     #[test]
