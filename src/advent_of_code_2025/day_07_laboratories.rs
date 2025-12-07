@@ -14,11 +14,29 @@ pub fn part_one(input: &str) -> Solution {
     // the bottom of the manifold. When the beam encounters a splitter, it stops
     // travelling and two new beams appear on the sides of the splitter. To fix
     // the teleporter, we need to find how many times a split occurs.
-    let Some(_manifold) = parse_manifold(input) else {
+    let Some(manifold) = parse_manifold(input) else {
         return Solution::ParseError;
     };
 
-    Solution::default()
+    // Because the beams all move downward at the same speed and direction, only
+    // the horizontal position needs to be considered. We use an array of
+    // whether a beam exists at a position.
+    let mut split_count = 0;
+    let mut beams = vec![false; manifold.width].into_boxed_slice();
+    beams[manifold.start_x] = true;
+
+    for y in 1..manifold.height {
+        for x in 0..manifold.width {
+            if beams[x] && manifold.has_splitter(x, y) {
+                beams[x - 1] = true;
+                beams[x] = false;
+                beams[x + 1] = true;
+                split_count += 1;
+            }
+        }
+    }
+
+    split_count.into()
 }
 
 /// Solves part two.
@@ -51,6 +69,11 @@ impl Manifold {
             start_x,
             cells: vec![false; width * height].into_boxed_slice(),
         }
+    }
+
+    /// Returns `true` if the `Manifold` has a splitter at a position.
+    fn has_splitter(&self, x: usize, y: usize) -> bool {
+        self.cells[x + y * self.width]
     }
 
     /// Inserts a splitter into the `Manifold` at a position.
