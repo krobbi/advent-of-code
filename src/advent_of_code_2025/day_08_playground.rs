@@ -16,7 +16,17 @@ pub fn part_one(input: &str) -> Solution {
     // junction box is a circuit with a size of 1. Two junction boxes connected
     // in a line is a circuit with a size of 2. A triangle or line of three
     // junction boxes is a circuit with a size of 3, etc.
-    let _ = input;
+    let Some(junction_boxes) = parse_input(input) else {
+        return Solution::ParseError;
+    };
+
+    for junction_box in junction_boxes {
+        println!(
+            "({}, {}, {})",
+            junction_box.position.0, junction_box.position.1, junction_box.position.2,
+        );
+    }
+
     Solution::default()
 }
 
@@ -24,6 +34,45 @@ pub fn part_one(input: &str) -> Solution {
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// A junction box.
+struct JunctionBox {
+    /// The `JunctionBox`'s [`Position`].
+    position: Position,
+}
+
+impl JunctionBox {
+    /// Creates a new `JunctionBox` from its [`Position`].
+    fn new(position: Position) -> Self {
+        Self { position }
+    }
+}
+
+/// A 3D position.
+struct Position(u32, u32, u32);
+
+/// Parses a boxed slice of [`JunctionBox`]es. from input. This function returns
+/// [`None`] if the [`JunctionBox`]es could not be parsed.
+fn parse_input(input: &str) -> Option<Box<[JunctionBox]>> {
+    let mut junction_boxes = Vec::new();
+
+    for line in input.lines() {
+        let position = parse_position(line)?;
+        junction_boxes.push(JunctionBox::new(position));
+    }
+
+    Some(junction_boxes.into_boxed_slice())
+}
+
+/// Parses a [`Position`] from a line of input. This function returns [`None`]
+/// if a [`Position`] could not be parsed.
+fn parse_position(line: &str) -> Option<Position> {
+    let mut numbers = line.trim().split(',');
+    let x = numbers.next()?.parse().ok()?;
+    let y = numbers.next()?.parse().ok()?;
+    let z = numbers.next()?.parse().ok()?;
+    Some(Position(x, y, z))
 }
 
 /*
