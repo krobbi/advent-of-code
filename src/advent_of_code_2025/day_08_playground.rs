@@ -6,6 +6,9 @@ use std::{cmp::Reverse, collections::HashSet};
 
 use crate::Solution;
 
+// These solutions will get to the right answer eventually, but are way too
+// slow.
+
 /// Solves part one.
 pub fn part_one(input: &str) -> Solution {
     // The Elves are decorating the playground with junction boxes
@@ -18,12 +21,38 @@ pub fn part_one(input: &str) -> Solution {
     // unconnected junction box is a circuit with a size of 1. Two junction
     // boxes connected in a line is a circuit with a size of 2. A triangle or
     // line of three junction boxes is a circuit with a size of 3, etc.
+    solve_part_one(input, 1000)
+}
+
+/// Solves part two.
+pub fn part_two(input: &str) -> Solution {
+    // The elves definitely don't have enough extension cables. They need to
+    // continue connecting junction boxes until they are all in one large
+    // circuit. The Elves want to know the product of the X co-ordinates of the
+    // last two connected junction boxes.
     let Some(mut junction_boxes) = parse_input(input) else {
         return Solution::ParseError;
     };
 
-    // The elves have 1000 string lights.
-    let mut string_light_count = 1000;
+    while let Some((first_index, second_index)) = find_shortest_unconnected_pair(&junction_boxes) {
+        junction_boxes[first_index].connect(second_index);
+        junction_boxes[second_index].connect(first_index);
+
+        if is_one_circuit(&junction_boxes) {
+            let first_x = junction_boxes[first_index].position.0;
+            let second_x = junction_boxes[second_index].position.0;
+            return (first_x * second_x).into();
+        }
+    }
+
+    Solution::SolveError
+}
+
+/// Solves part one with a number of string lights.
+fn solve_part_one(input: &str, mut string_light_count: u16) -> Solution {
+    let Some(mut junction_boxes) = parse_input(input) else {
+        return Solution::ParseError;
+    };
 
     while string_light_count > 0 {
         let Some((first_index, second_index)) = find_shortest_unconnected_pair(&junction_boxes)
@@ -62,30 +91,6 @@ pub fn part_one(input: &str) -> Solution {
 
     circuit_sizes.sort_by_key(|k| Reverse(*k));
     (circuit_sizes[0] * circuit_sizes[1] * circuit_sizes[2]).into()
-}
-
-/// Solves part two.
-pub fn part_two(input: &str) -> Solution {
-    // The elves definitely don't have enough extension cables. They need to
-    // continue connecting junction boxes until they are all in one large
-    // circuit. The Elves want to know the product of the X co-ordinates of the
-    // last two connected junction boxes.
-    let Some(mut junction_boxes) = parse_input(input) else {
-        return Solution::ParseError;
-    };
-
-    while let Some((first_index, second_index)) = find_shortest_unconnected_pair(&junction_boxes) {
-        junction_boxes[first_index].connect(second_index);
-        junction_boxes[second_index].connect(first_index);
-
-        if is_one_circuit(&junction_boxes) {
-            let first_x = junction_boxes[first_index].position.0;
-            let second_x = junction_boxes[second_index].position.0;
-            return (first_x * second_x).into();
-        }
-    }
-
-    Solution::SolveError
 }
 
 /// Finds the shortest unconnected pair of indices in a slice of
@@ -207,17 +212,42 @@ fn parse_position(line: &str) -> Option<Position> {
     Some(Position(x, y, z))
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// The example input for testing.
+    static INPUT: &str = "\
+        162,817,812\n\
+        57,618,57\n\
+        906,360,560\n\
+        592,479,940\n\
+        352,342,300\n\
+        466,668,158\n\
+        542,29,236\n\
+        431,825,988\n\
+        739,650,466\n\
+        52,470,668\n\
+        216,146,977\n\
+        819,987,18\n\
+        117,168,530\n\
+        805,96,715\n\
+        346,949,466\n\
+        970,615,88\n\
+        941,993,340\n\
+        862,61,35\n\
+        984,92,344\n\
+        425,690,689\n";
+
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(solve_part_one(INPUT, 10), 40.into());
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        assert_eq!(part_two(INPUT), 25272.into());
+    }
 }
-*/
