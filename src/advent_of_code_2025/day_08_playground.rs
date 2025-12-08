@@ -7,7 +7,9 @@ use std::{cmp::Reverse, collections::HashSet};
 use crate::Solution;
 
 // These solutions will get to the right answer eventually, but are way too
-// slow.
+// slow. Part two may take over a minute in debug mode. This is my least
+// favourite solution I have written for 2025 so far. My favourite solution so
+// far is day 7.
 
 /// Solves part one.
 pub fn part_one(input: &str) -> Solution {
