@@ -80,6 +80,7 @@ define_data! {
         05: day_05_cafeteria,
         06: day_06_trash_compactor,
         07: day_07_laboratories,
+        08: day_08_playground,
     },
 }
 
