@@ -66,8 +66,26 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // The elves definitely don't have enough extension cables. They need to
+    // continue connecting junction boxes until they are all in one large
+    // circuit. The Elves want to know the product of the X co-ordinates of the
+    // last two connected junction boxes.
+    let Some(mut junction_boxes) = parse_input(input) else {
+        return Solution::ParseError;
+    };
+
+    while let Some((first_index, second_index)) = find_shortest_unconnected_pair(&junction_boxes) {
+        junction_boxes[first_index].connect(second_index);
+        junction_boxes[second_index].connect(first_index);
+
+        if is_one_circuit(&junction_boxes) {
+            let first_x = junction_boxes[first_index].position.0;
+            let second_x = junction_boxes[second_index].position.0;
+            return (first_x * second_x).into();
+        }
+    }
+
+    Solution::SolveError
 }
 
 /// Finds the shortest unconnected pair of indices in a slice of
@@ -99,6 +117,29 @@ fn find_shortest_unconnected_pair(junction_boxes: &[JunctionBox]) -> Option<(usi
     }
 
     best_pair
+}
+
+/// Returns `true` if a slice of [`JunctionBox`]es forms a single circuit.
+fn is_one_circuit(junction_boxes: &[JunctionBox]) -> bool {
+    let mut visited_indices = HashSet::new();
+    let mut indices = vec![0];
+
+    while let Some(index) = indices.pop() {
+        if visited_indices.contains(&index) {
+            continue;
+        }
+
+        let junction_box = &junction_boxes[index];
+
+        if junction_box.connections.is_empty() {
+            return false;
+        }
+
+        visited_indices.insert(index);
+        indices.extend_from_slice(&junction_box.connections);
+    }
+
+    visited_indices.len() == junction_boxes.len()
 }
 
 /// A junction box.
