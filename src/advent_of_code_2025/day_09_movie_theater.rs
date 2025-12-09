@@ -40,17 +40,34 @@ pub fn part_one(input: &str) -> Solution {
         return 1.into();
     }
 
-    for (x, y) in tiles {
-        println!("({x}, {y})");
-    }
-
-    Solution::default()
+    find_largest_area(&tiles).into()
 }
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// Returns the largest area between two tiles co-ordinates from a slice of tile
+/// co-ordinates.
+fn find_largest_area(tiles: &[(u32, u32)]) -> u64 {
+    let mut largest_area = 1;
+
+    for index_a in 0..tiles.len() - 1 {
+        for index_b in index_a + 1..tiles.len() {
+            largest_area = largest_area.max(find_area(tiles[index_a], tiles[index_b]));
+        }
+    }
+
+    largest_area
+}
+
+/// Returns the area between two corner tile co-ordinates.
+fn find_area(a: (u32, u32), b: (u32, u32)) -> u64 {
+    let width = u64::from(a.0.abs_diff(b.0) + 1);
+    let height = u64::from(a.1.abs_diff(b.1) + 1);
+    width * height
 }
 
 /// Parses a boxed slice of tile co-ordinates from input. This function returns
