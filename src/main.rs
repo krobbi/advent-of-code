@@ -81,6 +81,7 @@ define_data! {
         06: day_06_trash_compactor,
         07: day_07_laboratories,
         08: day_08_playground,
+        09: day_09_movie_theater,
     },
 }
 
