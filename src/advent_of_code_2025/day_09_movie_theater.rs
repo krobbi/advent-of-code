@@ -7,7 +7,7 @@ use crate::Solution;
 /// Solves part one.
 pub fn part_one(input: &str) -> Solution {
     // The Elves are decorating the movie theater by switching out some of the
-    // floor (2D coordinates) tiles with red tiles. Some of the floor tiles are
+    // floor (2D co-ordinates) tiles with red tiles. Some of the floor tiles are
     // already red, and they want to find the area of the largest rectangle
     // whose opposite corners are red. In other words, they want to find the
     // distance squared between the furthest tiles.
@@ -30,7 +30,20 @@ pub fn part_one(input: &str) -> Solution {
     // are not on any of the bounding edges. Maybe the solution would involve a
     // point furthest from the centre of all the points, but I have decided to
     // check every pair.
-    let _ = input;
+    let Some(tiles) = parse_tiles(input) else {
+        return Solution::ParseError;
+    };
+
+    if tiles.is_empty() {
+        return Solution::SolveError;
+    } else if tiles.len() == 1 {
+        return 1.into();
+    }
+
+    for (x, y) in tiles {
+        println!("({x}, {y})");
+    }
+
     Solution::default()
 }
 
@@ -38,6 +51,28 @@ pub fn part_one(input: &str) -> Solution {
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// Parses a boxed slice of tile co-ordinates from input. This function returns
+/// [`None`] if tile co-ordinates could not be parsed.
+fn parse_tiles(input: &str) -> Option<Box<[(u32, u32)]>> {
+    let mut tiles = Vec::new();
+
+    for line in input.lines().map(str::trim) {
+        let tile = parse_tile(line)?;
+        tiles.push(tile);
+    }
+
+    Some(tiles.into())
+}
+
+/// Parses a tile co-ordinate from a line of input. This function returns
+/// [`None`] if a tile co-ordinate could not be parsed.
+fn parse_tile(line: &str) -> Option<(u32, u32)> {
+    let mut numbers = line.split(',');
+    let x = numbers.next()?.parse().ok()?;
+    let y = numbers.next()?.parse().ok()?;
+    Some((x, y))
 }
 
 /*
