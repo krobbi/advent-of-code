@@ -11,6 +11,11 @@ pub enum Solution {
     #[default]
     Incomplete,
 
+    /// A [`Part`][crate::data::Part] passes its test but is too slow to find a
+    /// solution for real input.
+    #[allow(dead_code, reason = "all puzzles may be fast enough")]
+    TooSlow,
+
     /// A [`Part`][crate::data::Part] could not parse its puzzle input.
     ParseError,
 
@@ -36,6 +41,7 @@ impl Display for Solution {
         let message = match self {
             Self::Solved(value) => return write!(f, "[{value}]"),
             Self::Incomplete => "incomplete",
+            Self::TooSlow => "too slow",
             Self::ParseError => "parse error",
             Self::SolveError => "solve error",
         };
