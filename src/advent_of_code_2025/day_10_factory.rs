@@ -23,7 +23,7 @@ pub fn part_one(input: &str) -> Solution {
     let mut total_button_presses = 0;
 
     for machine in &machines {
-        let Some(button_presses) = solve_machine(machine) else {
+        let Some(button_presses) = solve_machine_part_one(machine) else {
             return Solution::SolveError;
         };
 
@@ -35,20 +35,28 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
+    // Now that the machines have been initialized, we need to set their joltage
+    // requirements. Instead of toggling indicator lights, each button
+    // increments the corresponding joltage by one. Again, we need to find the
+    // fewest button presses to reach the joltage level.
+    let Some(machines) = parse_machines(input) else {
+        return Solution::ParseError;
+    };
+
+    for machine in machines {
+        println!("{:?}", machine.joltage_requirements.0);
+    }
+
     Solution::default()
 }
 
-/// Solves a part for one [`Machine`]. Returns [`None`] if the [`Machine`]
+/// Solves part one for one [`Machine`]. Returns [`None`] if the [`Machine`]
 /// cannot be solved.
-fn solve_machine(machine: &Machine) -> Option<u32> {
+fn solve_machine_part_one(machine: &Machine) -> Option<u32> {
     let mut light_costs = HashMap::new();
-    let mut unexplored_states = vec![State(0, 0)];
+    let mut unexplored_states = vec![(0, 0)];
 
-    while let Some(state) = unexplored_states.pop() {
-        let lights = state.0;
-        let cost = state.1;
-
+    while let Some((lights, cost)) = unexplored_states.pop() {
         if let Some(explored_cost) = light_costs.get(&lights).copied()
             && explored_cost <= cost
         {
@@ -63,24 +71,29 @@ fn solve_machine(machine: &Machine) -> Option<u32> {
         for button in &machine.buttons {
             let lights = lights ^ button;
             let cost = cost + 1;
-            unexplored_states.push(State(lights, cost));
+            unexplored_states.push((lights, cost));
         }
     }
 
     light_costs.get(&machine.target).copied()
 }
 
-/// A state of indicator lights and a cost.
-struct State(u16, u32);
-
 /// A machine.
 struct Machine {
     /// The target pattern of indicator lights.
     target: u16,
 
-    /// The indicator lights toggled by the buttons on the `Machine`.
+    /// The buttons on the `Machine` for toggling indicator lights and
+    /// incrementing joltage.
     buttons: Box<[u16]>,
+
+    /// The joltage requirements.
+    joltage_requirements: Joltages,
 }
+
+/// A set of joltages.
+#[derive(Clone, PartialEq, Eq, Hash)]
+struct Joltages([u16; 10]);
 
 /// Parses a boxed slice of [`Machine`]s from input. This function returns
 /// [`None`] if the [`Machine`]s could not be parsed.
@@ -121,7 +134,7 @@ fn parse_machine(line: &str) -> Option<Machine> {
         }
     }
 
-    if !(1..1024).contains(&target) {
+    if !(0..1024).contains(&target) {
         return None;
     }
 
@@ -140,9 +153,12 @@ fn parse_machine(line: &str) -> Option<Machine> {
         }
     }
 
+    let joltage_requirements = parse_joltages(&mut chars)?;
+
     Some(Machine {
         target,
         buttons: buttons.into(),
+        joltage_requirements,
     })
 }
 
@@ -171,6 +187,48 @@ fn parse_button(chars: &mut Peekable<Chars>) -> Option<u16> {
     (1..1024).contains(&button).then_some(button)
 }
 
+/// Parses a set of [`Joltages`] from a character iterator after consuming its
+/// opening brace. This function returns [`None`] if [`Joltages`] could not be
+/// parsed.
+fn parse_joltages(chars: &mut Peekable<Chars>) -> Option<Joltages> {
+    let mut joltages = Vec::new();
+
+    loop {
+        let mut joltage = String::new();
+
+        while let Some(digit) = chars.next_if(char::is_ascii_digit) {
+            joltage.push(digit);
+        }
+
+        let joltage = joltage.parse().ok()?;
+
+        if joltage == 0xffff {
+            // We need room to check for overjoltage.
+            return None;
+        }
+
+        joltages.push(joltage);
+
+        match chars.next()? {
+            '}' => break,
+            ',' => (),
+            _ => return None,
+        }
+    }
+
+    if joltages.len() > 10 {
+        return None;
+    }
+
+    let mut raw_joltages = [0; 10];
+
+    for (index, joltage) in joltages.iter().copied().enumerate() {
+        raw_joltages[index] = joltage;
+    }
+
+    Some(Joltages(raw_joltages))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -187,9 +245,9 @@ mod tests {
         assert_eq!(part_one(INPUT), 7.into());
     }
 
-    /*
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
-    */
+    fn part_two_works() {
+        assert_eq!(part_two(INPUT), 33.into());
+    }
 }
