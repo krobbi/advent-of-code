@@ -43,15 +43,29 @@ pub fn part_two(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    for machine in machines {
-        println!("{:?}", machine.joltage_requirements.0);
+    // This solution is good enough for the test but uses tons of memory on the
+    // actual puzzle input, possibly causing a freeze depending on how much
+    // memory you have.
+    // TODO: Optimize this solution and solve 2025 day 10 part two.
+    if machines.len() > 3 {
+        return Solution::TooSlow;
     }
 
-    Solution::default()
+    let mut total_button_presses = 0;
+
+    for machine in &machines {
+        let Some(button_presses) = solve_machine_part_two(machine) else {
+            return Solution::SolveError;
+        };
+
+        total_button_presses += button_presses;
+    }
+
+    total_button_presses.into()
 }
 
 /// Solves part one for one [`Machine`]. Returns [`None`] if the [`Machine`]
-/// cannot be solved.
+/// could not be solved.
 fn solve_machine_part_one(machine: &Machine) -> Option<u32> {
     let mut light_costs = HashMap::new();
     let mut unexplored_states = vec![(0, 0)];
@@ -68,7 +82,7 @@ fn solve_machine_part_one(machine: &Machine) -> Option<u32> {
         light_costs.insert(lights, cost);
 
         // Explore all the states that can be reached from this state.
-        for button in &machine.buttons {
+        for button in machine.buttons.iter().copied() {
             let lights = lights ^ button;
             let cost = cost + 1;
             unexplored_states.push((lights, cost));
@@ -76,6 +90,37 @@ fn solve_machine_part_one(machine: &Machine) -> Option<u32> {
     }
 
     light_costs.get(&machine.target).copied()
+}
+
+/// Solves part two for one [`Machine`]. Returns [`None`] if the [`Machine`]
+/// could not be solved.
+fn solve_machine_part_two(machine: &Machine) -> Option<u32> {
+    let mut joltage_costs: HashMap<Joltages, u32> = HashMap::new();
+    let mut unexplored_states = vec![(Joltages::default(), 0)];
+
+    while let Some((joltages, cost)) = unexplored_states.pop() {
+        if joltages.exceed(&machine.joltage_requirements) {
+            // Dead end, can't add any more joltage.
+            continue;
+        }
+
+        if let Some(explored_cost) = joltage_costs.get(&joltages).copied()
+            && explored_cost <= cost
+        {
+            // This state was already reached with a better or equal cost.
+            continue;
+        }
+
+        joltage_costs.insert(joltages.clone(), cost);
+
+        for button in machine.buttons.iter().copied() {
+            let joltages = joltages.with_button(button);
+            let cost = cost + 1;
+            unexplored_states.push((joltages, cost));
+        }
+    }
+
+    joltage_costs.get(&machine.joltage_requirements).copied()
 }
 
 /// A machine.
@@ -92,8 +137,31 @@ struct Machine {
 }
 
 /// A set of joltages.
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, Default, PartialEq, Eq, Hash)]
 struct Joltages([u16; 10]);
+
+impl Joltages {
+    /// Returns new [`Joltages`] after pressing a button.
+    fn with_button(&self, button: u16) -> Joltages {
+        let mut new_joltages = self.0;
+        let mut mask = 1;
+
+        for joltage in &mut new_joltages {
+            if button & mask != 0 {
+                *joltage += 1;
+            }
+
+            mask <<= 1;
+        }
+
+        Joltages(new_joltages)
+    }
+
+    /// Returns `true` if the [`Joltages`] exceed some other [`Joltages`].
+    fn exceed(&self, other: &Self) -> bool {
+        self.0.into_iter().zip(other.0).any(|(a, b)| a > b)
+    }
+}
 
 /// Parses a boxed slice of [`Machine`]s from input. This function returns
 /// [`None`] if the [`Machine`]s could not be parsed.
