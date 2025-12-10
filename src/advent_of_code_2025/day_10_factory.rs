@@ -20,17 +20,11 @@ pub fn part_one(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    let mut total_button_presses = 0;
-
-    for machine in &machines {
-        let Some(button_presses) = solve_machine_part_one(machine) else {
-            return Solution::SolveError;
-        };
-
-        total_button_presses += button_presses;
-    }
-
-    total_button_presses.into()
+    machines
+        .iter()
+        .map(solve_machine_part_one)
+        .sum::<u32>()
+        .into()
 }
 
 /// Solves part two.
@@ -66,30 +60,41 @@ pub fn part_two(input: &str) -> Solution {
 
 /// Solves part one for one [`Machine`]. Returns [`None`] if the [`Machine`]
 /// could not be solved.
-fn solve_machine_part_one(machine: &Machine) -> Option<u32> {
-    let mut light_costs = HashMap::new();
-    let mut unexplored_states = vec![(0, 0)];
+fn solve_machine_part_one(machine: &Machine) -> u32 {
+    // My original solution for part one used a depth-first search with a cache
+    // of the least number of button presses to reach a state of indicator
+    // lights. Each button is essentially an XOR operation, so I optimised it
+    // after making these observations:
+    // * XOR is commutative - it does not matter what order a sequence of XOR
+    //   operations is performed in because it always produces the same result.
+    //   Therefore, it does not matter what order the buttons are pressed in.
+    // * XOR is inversive - repeating an XOR operation will produce the input as
+    //   a result. Therefore, pressing any button more than once undoes any work
+    //   it did, and will not contribute to the solution.
+    // This means that the solution must be a combination of each button either
+    // being pressed or not pressed. We can iterate over every possible solution
+    // to find the best one.
+    let combination_count = 1u16 << machine.buttons.len();
+    let mut fewest_button_presses = 10;
 
-    while let Some((lights, cost)) = unexplored_states.pop() {
-        if let Some(explored_cost) = light_costs.get(&lights).copied()
-            && explored_cost <= cost
-        {
-            // This state was already reached with a better or equal cost.
-            continue;
+    for mask in 0..combination_count {
+        let mut lights = machine.target;
+        let mut bit = 1;
+
+        for button in &machine.buttons {
+            if mask & bit != 0 {
+                lights ^= button;
+            }
+
+            bit <<= 1;
         }
 
-        // A state was discovered or was reached with a better cost.
-        light_costs.insert(lights, cost);
-
-        // Explore all the states that can be reached from this state.
-        for button in machine.buttons.iter().copied() {
-            let lights = lights ^ button;
-            let cost = cost + 1;
-            unexplored_states.push((lights, cost));
+        if lights == 0 {
+            fewest_button_presses = fewest_button_presses.min(mask.count_ones());
         }
     }
 
-    light_costs.get(&machine.target).copied()
+    fewest_button_presses
 }
 
 /// Solves part two for one [`Machine`]. Returns [`None`] if the [`Machine`]
@@ -128,8 +133,8 @@ struct Machine {
     /// The target pattern of indicator lights.
     target: u16,
 
-    /// The buttons on the `Machine` for toggling indicator lights and
-    /// incrementing joltage.
+    /// The buttons on the `Machine`, which are bit masks for toggling indicator
+    /// lights and incrementing joltage.
     buttons: Box<[u16]>,
 
     /// The joltage requirements.
@@ -219,6 +224,10 @@ fn parse_machine(line: &str) -> Option<Machine> {
             '{' => break,
             _ => return None,
         }
+    }
+
+    if buttons.is_empty() {
+        return None;
     }
 
     let joltage_requirements = parse_joltages(&mut chars)?;
