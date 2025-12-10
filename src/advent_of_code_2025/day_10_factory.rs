@@ -2,7 +2,7 @@
 //!
 //! [link]: https://adventofcode.com/2025/day/10
 
-use std::{iter::Peekable, str::Chars};
+use std::{collections::HashMap, iter::Peekable, str::Chars};
 
 use crate::Solution;
 
@@ -16,11 +16,21 @@ pub fn part_one(input: &str) -> Solution {
     // button presses to turn on every machine.
 
     // This pattern toggling system seems like a good candidate for bitwise XOR.
-    let Some(_machines) = parse_machines(input) else {
+    let Some(machines) = parse_machines(input) else {
         return Solution::ParseError;
     };
 
-    Solution::default()
+    let mut total_button_presses = 0;
+
+    for machine in &machines {
+        let Some(button_presses) = solve_machine(machine) else {
+            return Solution::SolveError;
+        };
+
+        total_button_presses += button_presses;
+    }
+
+    total_button_presses.into()
 }
 
 /// Solves part two.
@@ -28,6 +38,40 @@ pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
 }
+
+/// Solves a part for one [`Machine`]. Returns [`None`] if the [`Machine`]
+/// cannot be solved.
+fn solve_machine(machine: &Machine) -> Option<u32> {
+    let mut light_costs = HashMap::new();
+    let mut unexplored_states = vec![State(0, 0)];
+
+    while let Some(state) = unexplored_states.pop() {
+        let lights = state.0;
+        let cost = state.1;
+
+        if let Some(explored_cost) = light_costs.get(&lights).copied()
+            && explored_cost <= cost
+        {
+            // This state was already reached with a better or equal cost.
+            continue;
+        }
+
+        // A state was discovered or was reached with a better cost.
+        light_costs.insert(lights, cost);
+
+        // Explore all the states that can be reached from this state.
+        for button in &machine.buttons {
+            let lights = lights ^ button;
+            let cost = cost + 1;
+            unexplored_states.push(State(lights, cost));
+        }
+    }
+
+    light_costs.get(&machine.target).copied()
+}
+
+/// A state of indicator lights and a cost.
+struct State(u16, u32);
 
 /// A machine.
 struct Machine {
@@ -61,10 +105,14 @@ fn parse_machine(line: &str) -> Option<Machine> {
     }
 
     let mut target = 0;
+    let mut lights = String::new();
 
     while *chars.peek()? != ']' {
+        lights.push(chars.next()?);
+    }
+
+    for light in lights.chars().rev() {
         target <<= 1;
-        let light = chars.next()?;
 
         if light == '#' {
             target |= 1;
@@ -73,7 +121,7 @@ fn parse_machine(line: &str) -> Option<Machine> {
         }
     }
 
-    if !(0..1024).contains(&target) {
+    if !(1..1024).contains(&target) {
         return None;
     }
 
@@ -123,17 +171,25 @@ fn parse_button(chars: &mut Peekable<Chars>) -> Option<u16> {
     (1..1024).contains(&button).then_some(button)
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// The example input for testing.
+    static INPUT: &str = "\
+        [.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}\n\
+        [...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}\n\
+        [.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}\n";
+
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(part_one(INPUT), 7.into());
+    }
 
+    /*
     /// Tests part two.
     #[test]
     fn part_two_works() {}
+    */
 }
-*/
