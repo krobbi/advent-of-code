@@ -53,8 +53,25 @@ pub fn part_two(input: &str) -> Solution {
     // largest rectangle is found it must be tested. The loop may be concave so
     // this is difficult to test. My first attempt searched for concave corners,
     // and made them into rectangles, but this did not solve every possibility.
-    let _ = input;
-    Solution::default()
+    // For my solution, I represent the border of the shape as a set of line
+    // segments which must not intersect with the solution rectangle.
+    let Some(points) = parse_points(input) else {
+        return Solution::ParseError;
+    };
+
+    if points.len() < 4 {
+        return Solution::SolveError;
+    }
+
+    let shape = Shape::new(&points);
+
+    for rect in largest_rects(&points) {
+        if shape.fits_rect(rect) {
+            return rect.area().into();
+        }
+    }
+
+    Solution::SolveError
 }
 
 /// Returns a boxed slice of every [`Rect`] formed between two different
@@ -83,13 +100,6 @@ struct Point {
 
     /// The `Point`'s Y co-ordinate.
     y: u32,
-}
-
-impl Point {
-    /// Creates a new `Point` from X and Y co-ordinates.
-    fn new(x: u32, y: u32) -> Self {
-        Self { x, y }
-    }
 }
 
 /// A rectangle.
@@ -132,6 +142,108 @@ impl Rect {
     }
 }
 
+/// A shape with horitontal and vertical [`Seg`]s.
+#[derive(Default)]
+struct Shape {
+    /// The horizontal terminating [`Seg`]s.
+    h_segs: Vec<Seg>,
+
+    /// The vertical terminating [`Seg`]s.
+    v_segs: Vec<Seg>,
+}
+
+impl Shape {
+    /// Creates a new `Shape` from a loop of [`Point`]s wound clockwise.
+    fn new(points: &[Point]) -> Self {
+        let mut shape = Self::default();
+
+        for (prev, a, b, next) in points.windows(4).map(|w| (w[0], w[1], w[2], w[3])) {
+            shape.insert_seg(prev, a, b, next);
+        }
+
+        let len = points.len();
+        shape.insert_seg(points[len - 3], points[len - 2], points[len - 1], points[0]);
+        shape.insert_seg(points[len - 2], points[len - 1], points[0], points[1]);
+        shape.insert_seg(points[len - 1], points[0], points[1], points[2]);
+        shape
+    }
+
+    /// Returns `true` if a [`Rect`] fits into the `Shape`, assuming the
+    /// top-left [`Point`] is on a vertex.
+    fn fits_rect(&self, rect: Rect) -> bool {
+        for seg in self.h_segs.iter().copied() {
+            if seg.p >= rect.top
+                && seg.p <= rect.bottom
+                && seg.n_max >= rect.left
+                && seg.n_min <= rect.right
+            {
+                return false;
+            }
+        }
+
+        for seg in self.v_segs.iter().copied() {
+            if seg.p >= rect.left
+                && seg.p <= rect.right
+                && seg.n_max >= rect.top
+                && seg.n_min <= rect.bottom
+            {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Inserts a new [`Seg`] into the `Shape` from its previous, start, end,
+    /// and next [`Point`]s.
+    fn insert_seg(&mut self, prev: Point, a: Point, b: Point, next: Point) {
+        // This is horrible code, but it has been tested and ensures that there
+        // are no gaps or spikes in the edges.
+        if a.x == b.x {
+            let is_right = a.y < b.y;
+
+            let (p, above, top, bottom, below) = if is_right {
+                (a.x + 1, prev, a, b, next)
+            } else {
+                (a.x - 1, next, b, a, prev)
+            };
+
+            let is_top_concave = (above.x > top.x) == is_right;
+            let is_bottom_concave = (below.x > bottom.x) == is_right;
+            let n_min = top.y + u32::from(is_top_concave);
+            let n_max = bottom.y - u32::from(is_bottom_concave);
+            self.v_segs.push(Seg { p, n_min, n_max });
+        } else if a.y == b.y {
+            let is_bottom = a.x > b.x;
+
+            let (p, before, left, right, after) = if is_bottom {
+                (a.y + 1, next, b, a, prev)
+            } else {
+                (a.y - 1, prev, a, b, next)
+            };
+
+            let is_left_concave = (before.y > left.y) == is_bottom;
+            let is_right_concave = (after.y > right.y) == is_bottom;
+            let n_min = left.x + u32::from(is_left_concave);
+            let n_max = right.x - u32::from(is_right_concave);
+            self.h_segs.push(Seg { p, n_min, n_max });
+        }
+    }
+}
+
+/// An axis-aligned line segment.
+#[derive(Clone, Copy)]
+struct Seg {
+    /// The `Seg`'s plane co-ordinate.
+    p: u32,
+
+    /// The `Seg`'s minimum normal co-ordinate.
+    n_min: u32,
+
+    /// The `Seg`'s maximum normal co-ordinate.
+    n_max: u32,
+}
+
 /// Parses a boxed slice of [`Point`]s from input. This function returns
 /// [`None`] if the [`Point`]s could be parsed.
 fn parse_points(input: &str) -> Option<Box<[Point]>> {
@@ -151,7 +263,7 @@ fn parse_point(line: &str) -> Option<Point> {
     let mut numbers = line.split(',');
     let x = numbers.next()?.parse().ok()?;
     let y = numbers.next()?.parse().ok()?;
-    Some(Point::new(x, y))
+    Some(Point { x, y })
 }
 
 #[cfg(test)]
