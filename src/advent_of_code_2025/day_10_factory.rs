@@ -58,8 +58,7 @@ pub fn part_two(input: &str) -> Solution {
     total_button_presses.into()
 }
 
-/// Solves part one for one [`Machine`]. Returns [`None`] if the [`Machine`]
-/// could not be solved.
+/// Solves part one for one [`Machine`].
 fn solve_machine_part_one(machine: &Machine) -> u32 {
     // My original solution for part one used a depth-first search with a cache
     // of the least number of button presses to reach a state of indicator
@@ -74,8 +73,10 @@ fn solve_machine_part_one(machine: &Machine) -> u32 {
     // This means that the solution must be a combination of each button either
     // being pressed or not pressed. We can iterate over every possible solution
     // to find the best one.
-    let combination_count = 1u16 << machine.buttons.len();
-    let mut fewest_button_presses = 10;
+    let mut fewest_button_presses = u32::try_from(machine.buttons.len())
+        .expect("there should be fewer than `u32::MAX` buttons on a machine");
+
+    let combination_count = 1u16 << fewest_button_presses;
 
     for mask in 0..combination_count {
         let mut lights = machine.target;
