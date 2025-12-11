@@ -30,27 +30,38 @@ pub fn part_two(input: &str) -> Solution {
     // The Elves have found the source of the problem: the server rack ("svr")
     // connects to the output ("out") through both a digital-to-analog converter
     // ("dac") and fast fourier transformer ("fft"). The Elves want to know how
-    // many paths exist between the server and the output that pass through the
-    // DAC and FFT.
+    // many paths exist between the server and the output which pass through
+    // both the DAC and the FFT.
     let Some(network) = parse_network(input) else {
         return Solution::ParseError;
     };
 
-    // Because the network is (presumably) acyclic, either the DAC or FFT should
-    // appear first, but not the other way around.
-    let fft_to_dac = network.count_paths("fft", "dac");
-    let dac_to_fft = network.count_paths("dac", "fft");
-    let middle_path_count = fft_to_dac + dac_to_fft;
+    // Because the network is (presumably) acyclic, there should be paths from
+    // the DAC to the FFT or paths from the FFT to the DAC, but not both. We may
+    // need to check both directions depending on the input.
+    let dac_to_fft_path_count = network.count_paths("dac", "fft");
+    let fft_to_dac_path_count = network.count_paths("fft", "dac");
 
-    let (first, second) = if fft_to_dac == 0 {
+    // The paths between the DAC and the FFT form a 'bad section' which should
+    // not be passed through between the server and the output. One of these
+    // devices is the entry to this section and the other device is the exit.
+    let bad_path_count = dac_to_fft_path_count + fft_to_dac_path_count;
+
+    let (entry_device_name, exit_device_name) = if dac_to_fft_path_count != 0 {
         ("dac", "fft")
     } else {
         ("fft", "dac")
     };
 
-    let beginning_path_count = network.count_paths("svr", first);
-    let end_path_count = network.count_paths(second, "out");
-    (beginning_path_count * middle_path_count * end_path_count).into()
+    // Now we find the number of paths which can enter and exit this bad
+    // section.
+    let entry_path_count = network.count_paths("svr", entry_device_name);
+    let exit_path_count = network.count_paths(exit_device_name, "out");
+
+    // The server can reach the entry device with some number of paths, which
+    // can reach the exit device with some number of paths, which can reach the
+    // output with some number of paths.
+    (entry_path_count * bad_path_count * exit_path_count).into()
 }
 
 /// Returns the number of paths from a source device name to a target device
