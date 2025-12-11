@@ -18,11 +18,12 @@ pub fn part_one(input: &str) -> Solution {
     // output.
 
     // This sounds like traversing a directed (hopefully acyclic) graph.
-    let Some(_network) = parse_network(input) else {
+    let Some(network) = parse_network(input) else {
         return Solution::ParseError;
     };
 
-    Solution::default()
+    let mut memo = HashMap::new();
+    count_paths_to_out(&network, "you", &mut memo).into()
 }
 
 /// Solves part two.
@@ -31,11 +32,44 @@ pub fn part_two(input: &str) -> Solution {
     Solution::default()
 }
 
+/// Returns the number of paths from a device name in a [`Network`] to the "out"
+/// device.
+fn count_paths_to_out(
+    network: &Network,
+    device_name: &str,
+    memo: &mut HashMap<String, u32>,
+) -> u32 {
+    if device_name == "out" {
+        return 1;
+    } else if let Some(path_count) = memo.get(device_name).copied() {
+        return path_count;
+    }
+
+    let mut path_count = 0;
+
+    for connected_device_name in network.connections_from(device_name) {
+        path_count += count_paths_to_out(network, connected_device_name, memo);
+    }
+
+    memo.insert(device_name.into(), path_count);
+    path_count
+}
+
 /// A data network.
 #[derive(Default)]
 struct Network {
-    /// The map of device names to `Device`s.
+    /// The map of device names to [`Device`]s.
     devices: HashMap<String, Device>,
+}
+
+impl Network {
+    /// Returns a slice of device names connected from another device name.
+    fn connections_from(&self, device_name: &str) -> &[String] {
+        match self.devices.get(device_name) {
+            None => &[],
+            Some(device) => &device.connections,
+        }
+    }
 }
 
 /// A device in a [`Network`].
