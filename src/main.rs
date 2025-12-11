@@ -83,6 +83,7 @@ define_data! {
         08: day_08_playground,
         09: day_09_movie_theater,
         10: day_10_factory,
+        11: day_11_reactor,
     },
 }
 
