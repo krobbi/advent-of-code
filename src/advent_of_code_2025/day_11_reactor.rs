@@ -22,36 +22,59 @@ pub fn part_one(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    let mut memo = HashMap::new();
-    count_paths_to_out(&network, "you", &mut memo).into()
+    network.count_paths("you", "out").into()
 }
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    let _ = input;
-    Solution::default()
+    // The Elves have found the source of the problem: the server rack ("svr")
+    // connects to the output ("out") through both a digital-to-analog converter
+    // ("dac") and fast fourier transformer ("fft"). The Elves want to know how
+    // many paths exist between the server and the output that pass through the
+    // DAC and FFT.
+    let Some(network) = parse_network(input) else {
+        return Solution::ParseError;
+    };
+
+    // Because the network is (presumably) acyclic, either the DAC or FFT should
+    // appear first, but not the other way around.
+    let fft_to_dac = network.count_paths("fft", "dac");
+    let dac_to_fft = network.count_paths("dac", "fft");
+    let middle_path_count = fft_to_dac + dac_to_fft;
+
+    let (first, second) = if fft_to_dac == 0 {
+        ("dac", "fft")
+    } else {
+        ("fft", "dac")
+    };
+
+    let beginning_path_count = network.count_paths("svr", first);
+    let end_path_count = network.count_paths(second, "out");
+    (beginning_path_count * middle_path_count * end_path_count).into()
 }
 
-/// Returns the number of paths from a device name in a [`Network`] to the "out"
-/// device.
-fn count_paths_to_out(
+/// Returns the number of paths from a source device name to a target device
+/// name in a [`Network`] to the "out" device with a memo.
+fn count_paths_with_memo(
     network: &Network,
-    device_name: &str,
-    memo: &mut HashMap<String, u32>,
-) -> u32 {
-    if device_name == "out" {
+    source_device_name: &str,
+    target_device_name: &str,
+    memo: &mut HashMap<String, u64>,
+) -> u64 {
+    if source_device_name == target_device_name {
         return 1;
-    } else if let Some(path_count) = memo.get(device_name).copied() {
+    } else if let Some(path_count) = memo.get(source_device_name).copied() {
         return path_count;
     }
 
     let mut path_count = 0;
 
-    for connected_device_name in network.connections_from(device_name) {
-        path_count += count_paths_to_out(network, connected_device_name, memo);
+    for connected_device_name in network.connections_from(source_device_name) {
+        path_count +=
+            count_paths_with_memo(network, connected_device_name, target_device_name, memo);
     }
 
-    memo.insert(device_name.into(), path_count);
+    memo.insert(source_device_name.into(), path_count);
     path_count
 }
 
@@ -69,6 +92,13 @@ impl Network {
             None => &[],
             Some(device) => &device.connections,
         }
+    }
+
+    /// Returns the number of paths from a source device name to a target device
+    /// name.
+    fn count_paths(&self, source_device_name: &str, target_device_name: &str) -> u64 {
+        let mut memo = HashMap::new();
+        count_paths_with_memo(self, source_device_name, target_device_name, &mut memo)
     }
 }
 
