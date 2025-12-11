@@ -152,17 +152,46 @@ fn parse_device(line: &str) -> Option<(String, Device)> {
     Some((device_name.into(), device))
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        static INPUT: &str = "\
+            aaa: you hhh\n\
+            you: bbb ccc\n\
+            bbb: ddd eee\n\
+            ccc: ddd eee fff\n\
+            ddd: ggg\n\
+            eee: out\n\
+            fff: out\n\
+            ggg: out\n\
+            hhh: ccc fff iii\n\
+            iii: out\n";
+
+        assert_eq!(part_one(INPUT), 5.into());
+    }
 
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
+    fn part_two_works() {
+        static INPUT: &str = "\
+            svr: aaa bbb\n\
+            aaa: fft\n\
+            fft: ccc\n\
+            bbb: tty\n\
+            tty: ccc\n\
+            ccc: ddd eee\n\
+            ddd: hub\n\
+            hub: fff\n\
+            eee: dac\n\
+            dac: fff\n\
+            fff: ggg hhh\n\
+            ggg: out\n\
+            hhh: out\n";
+
+        assert_eq!(part_two(INPUT), 2.into());
+    }
 }
-*/
