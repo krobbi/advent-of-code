@@ -20,7 +20,7 @@ pub fn part_one(input: &str) -> Solution {
     // I can't think of a good way to solve this other than trying every
     // possibility until one fits. Flipping or rotating a shape may produce
     // duplicates, which can be removed to possibly speed up the solution.
-    let Some(shapes) = parse_shapes_and_regions(input) else {
+    let Some((shapes, regions)) = parse_shapes_and_regions(input) else {
         return Solution::ParseError;
     };
 
@@ -42,6 +42,16 @@ pub fn part_one(input: &str) -> Solution {
         }
     }
 
+    for region in regions {
+        print!("{}x{} region", region.width, region.height);
+
+        for count in region.shape_counts {
+            print!(", {count}");
+        }
+
+        println!();
+    }
+
     Solution::default()
 }
 
@@ -60,7 +70,7 @@ struct Grid {
     height: usize,
 
     /// The cells.
-    cells: Vec<bool>,
+    cells: Box<[bool]>,
 }
 
 impl Grid {
@@ -69,16 +79,29 @@ impl Grid {
         Self {
             width,
             height,
-            cells: vec![false; width * height],
+            cells: vec![false; width * height].into(),
         }
     }
 }
 
-/// Parses shapes and regions from input. This function returns [`None`] if
-/// shapes and regions could not be parsed.
-fn parse_shapes_and_regions(input: &str) -> Option<Box<[Grid]>> {
+/// A region where presents must be arranged.
+struct Region {
+    /// The width of the `Region` in cells.
+    width: usize,
+
+    /// The height of the `Region` in cells.
+    height: usize,
+
+    /// The amount of each shape expected in the `Region`.
+    shape_counts: Box<[u8]>,
+}
+
+/// Parses shape [`Grid`]s and [`Region`]s from input. This function returns
+/// [`None`] if shape [`Grid`]s and [`Region`]s could not be parsed.
+fn parse_shapes_and_regions(input: &str) -> Option<(Box<[Grid]>, Box<[Region]>)> {
     let mut lines = input.lines().map(str::trim).peekable();
     let mut shapes = Vec::new();
+    let mut regions = Vec::new();
 
     while let Some(line) = lines.next() {
         if line.ends_with(':') {
@@ -90,10 +113,18 @@ fn parse_shapes_and_regions(input: &str) -> Option<Box<[Grid]>> {
 
             let shape = parse_shape(&mut lines)?;
             shapes.push(shape);
+        } else if !line.is_empty() {
+            let region = parse_region(line)?;
+
+            if region.shape_counts.len() != shapes.len() {
+                return None;
+            }
+
+            regions.push(region);
         }
     }
 
-    Some(shapes.into())
+    Some((shapes.into(), regions.into()))
 }
 
 /// Parses a shape [`Grid`] from a peekable line iterator after consuming its
@@ -124,6 +155,27 @@ fn parse_shape<'a>(lines: &mut Peekable<impl Iterator<Item = &'a str>>) -> Optio
     }
 
     Some(grid)
+}
+
+/// Parses a region from a line of input. This function returns [`None`] if a
+/// [`Region`] could not be parsed.
+fn parse_region(line: &str) -> Option<Region> {
+    let mut words = line.split(' ');
+    let mut dimensions = words.next()?.trim_end_matches(':').split('x');
+    let width = dimensions.next()?.parse().ok()?;
+    let height = dimensions.next()?.parse().ok()?;
+    let mut shape_counts = Vec::new();
+
+    for count in words {
+        let count = count.parse().ok()?;
+        shape_counts.push(count);
+    }
+
+    Some(Region {
+        width,
+        height,
+        shape_counts: shape_counts.into(),
+    })
 }
 
 /*

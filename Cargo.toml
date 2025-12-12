@@ -16,6 +16,7 @@ unknown_lints = "forbid"
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
 must_use_candidate = "allow"
+type_complexity = "allow"
 
 [profile.release]
 strip = true
