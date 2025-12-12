@@ -57,10 +57,20 @@ pub fn part_two(input: &str) -> Solution {
     Solution::default()
 }
 
-/// Consumes a [`Grid`] and returns its variants.
+/// Consumes a [`Grid`] and returns its rotational and chiral variants.
 fn grid_variants(grid: Grid) -> Vec<Grid> {
-    let flipped_grid = grid.flip();
-    vec![grid, flipped_grid]
+    let mut flipped_rotations = grid_rotations(grid.flip());
+    let mut rotations = grid_rotations(grid);
+    rotations.append(&mut flipped_rotations);
+    rotations
+}
+
+/// Consumes a [`Grid`] and returns its rotational variants.
+fn grid_rotations(grid: Grid) -> Vec<Grid> {
+    let r1 = grid.rotate();
+    let r2 = r1.rotate();
+    let r3 = r2.rotate();
+    vec![grid, r1, r2, r3]
 }
 
 /// A grid of cells which may be occupied by a present.
@@ -85,7 +95,7 @@ impl Grid {
         }
     }
 
-    /// Returns a new flipped variant of the `Grid`.
+    /// Returns a new variant of the `Grid`, flipped horizontally.
     fn flip(&self) -> Self {
         let mut flipped_grid = Self::new(self.width, self.height);
 
@@ -97,6 +107,23 @@ impl Grid {
         }
 
         flipped_grid
+    }
+
+    /// Returns a new variant of the `Grid`, rotated 90 degrees clockwise.
+    fn rotate(&self) -> Self {
+        let mut rotated_grid = Self::new(self.height, self.width);
+
+        for y in 0..rotated_grid.height {
+            for x in 0..rotated_grid.width {
+                let source_x = y;
+                let source_y = rotated_grid.width - x - 1;
+                let source_index = source_x + source_y * self.width;
+                let target_index = x + y * rotated_grid.width;
+                rotated_grid.cells[target_index] = self.cells[source_index];
+            }
+        }
+
+        rotated_grid
     }
 }
 
