@@ -84,6 +84,7 @@ define_data! {
         09: day_09_movie_theater,
         10: day_10_factory,
         11: day_11_reactor,
+        12: day_12_christmas_tree_farm,
     },
 }
 
