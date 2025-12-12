@@ -20,51 +20,40 @@ pub fn part_one(input: &str) -> Solution {
     // I can't think of a good way to solve this other than trying every
     // possibility until one fits. Flipping or rotating a shape may produce
     // duplicates, which can be removed to possibly speed up the solution.
-    let Some((shapes, _regions)) = parse_shapes_and_regions(input) else {
+
+    // The actual solution is faster than the test. Presumably the actual input
+    // has plenty of space.
+    let Some((shapes, regions)) = parse_shapes_and_regions(input) else {
         return Solution::ParseError;
     };
 
     let shapes = process_shapes(shapes);
 
-    for (index, shape) in shapes.iter().enumerate() {
-        println!("\nShape {index}:");
-
-        for variant in shape {
-            for y in 0..variant.height {
-                print!(" ");
-
-                for x in 0..variant.width {
-                    if variant.cells[x + y * variant.width] {
-                        print!("[]");
-                    } else {
-                        print!("  ");
-                    }
-                }
-
-                println!();
-            }
-
-            println!("---");
-        }
-    }
-
-    Solution::default()
+    regions
+        .iter()
+        .map(|r| region_can_be_filled(&shapes, r))
+        .map(u16::from)
+        .sum::<u16>()
+        .into()
 }
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
+    // Part two can't be solved until day 10 part two is solved.
     let _ = input;
     Solution::default()
 }
 
-/// Processes a boxed slice of shape [`Grid`]s into a boxed slice of boxed
-/// slices of shape variant [`Grid`]s.
-fn process_shapes(shapes: Box<[Grid]>) -> Box<[Box<[Grid]>]> {
-    shapes
+/// Processes a boxed slice of shape [`Grid`]s into [`ShapeData`].
+fn process_shapes(shapes: Box<[Grid]>) -> ShapeData {
+    let shapes = shapes
         .into_iter()
         .map(grid_variants)
         .map(deduplicate_grids)
-        .collect()
+        .map(Shape::new)
+        .collect();
+
+    ShapeData::new(shapes)
 }
 
 /// Consumes a [`Grid`] and returns a vector of its rotational and chiral
@@ -102,13 +91,132 @@ fn deduplicate_grids(mut grids: Vec<Grid>) -> Box<[Grid]> {
     deduplicated_grids.into()
 }
 
+/// Returns `true` if a [`Region`] can be filled with its expected shapes.
+fn region_can_be_filled(shapes: &ShapeData, region: &Region) -> bool {
+    let grid_area = region.width * region.height;
+    let shape_area = shape_count_area(shapes, &region.shape_counts);
+
+    if shape_area > grid_area {
+        return false;
+    }
+
+    let mut grid = Grid::new(region.width, region.height);
+    shapes_fit_grid(shapes, &mut grid, &region.shape_counts)
+}
+
+/// Returns the total area of a slice of shape counts.
+fn shape_count_area(shapes: &ShapeData, shape_counts: &[u8]) -> usize {
+    let mut total_area = 0;
+
+    for (index, count) in shape_counts.iter().copied().enumerate() {
+        let shape = shapes.shape(index);
+
+        total_area += shape.area() * usize::from(count);
+    }
+
+    total_area
+}
+
+/// Returns `true` if shape counts can fit into a [`Grid`].
+fn shapes_fit_grid(shapes: &ShapeData, grid: &mut Grid, shape_counts: &[u8]) -> bool {
+    let Some((shape_index, shape_counts)) = pop_shape_index(shape_counts) else {
+        // No more shapes to fit.
+        return true;
+    };
+
+    let shape = shapes.shape(shape_index);
+
+    for y in -shape.height..grid.height {
+        for x in -shape.width..grid.width {
+            for variant in &shape.variants {
+                if !grid.fits_grid(variant, x, y) {
+                    continue;
+                }
+
+                grid.stamp_grid(variant, x, y, true);
+
+                if shapes_fit_grid(shapes, grid, &shape_counts) {
+                    return true;
+                }
+
+                grid.stamp_grid(variant, x, y, false);
+            }
+        }
+    }
+
+    false
+}
+
+/// Pops a shape index from a slice of shape counts and returns the shape index
+/// and new shape counts. This function returns [`None`] if there are no more
+/// shape counts.
+fn pop_shape_index(shape_counts: &[u8]) -> Option<(usize, Box<[u8]>)> {
+    for (index, shape_count) in shape_counts.iter().copied().enumerate() {
+        if shape_count > 0 {
+            let mut shape_counts = shape_counts.to_owned().into_boxed_slice();
+            shape_counts[index] -= 1;
+            return Some((index, shape_counts));
+        }
+    }
+
+    None
+}
+
+/// A database of [`Shape`]s.
+struct ShapeData {
+    /// The [Shape]s.
+    shapes: Box<[Shape]>,
+}
+
+impl ShapeData {
+    /// Creates new `ShapeData` from a boxed slice of [`Shape`]s.
+    fn new(shapes: Box<[Shape]>) -> Self {
+        Self { shapes }
+    }
+
+    /// Returns a reference to a [`Shape`] from its shape index.
+    fn shape(&self, shape_index: usize) -> &Shape {
+        &self.shapes[shape_index]
+    }
+}
+
+/// A processed shape.
+struct Shape {
+    /// The width of the `Shape` in cells.
+    width: i8,
+
+    /// The height of the `Shape` in cells.
+    height: i8,
+
+    /// The `Shape`'s variant [`Grid`]s.
+    variants: Box<[Grid]>,
+}
+
+impl Shape {
+    /// Creates a new `Shape` from its variant [`Grid`]s.
+    fn new(variants: Box<[Grid]>) -> Self {
+        let first_variant = &variants[0];
+
+        Self {
+            width: first_variant.width,
+            height: first_variant.height,
+            variants,
+        }
+    }
+
+    /// Returns the area of the [`Shape`] in cells.
+    fn area(&self) -> usize {
+        self.variants[0].cells.iter().filter(|c| **c).count()
+    }
+}
+
 /// A grid of cells which may be occupied by a present.
 struct Grid {
     /// The width of the `Grid` in cells.
-    width: usize,
+    width: i8,
 
     /// The height of the `Grid` in cells.
-    height: usize,
+    height: i8,
 
     /// The cells.
     cells: Box<[bool]>,
@@ -117,38 +225,85 @@ struct Grid {
 impl Grid {
     /// Creates a new `Grid` from its width and height.
     fn new(width: usize, height: usize) -> Self {
+        let cells = vec![false; width * height].into();
+        let width = i8::try_from(width).expect("width should be less than `i8::MAX`");
+        let height = i8::try_from(height).expect("height should be less than `i8::MAX`");
+
         Self {
             width,
             height,
-            cells: vec![false; width * height].into(),
+            cells,
         }
     }
 
-    /// Returns `true` if the `Grid` is a duplicate of another `Grid`.
-    fn is_duplicate_of(&self, other: &Self) -> bool {
-        // This does not account for translation or rotations of non-square
-        // shapes, but this probably doesn't apply to the input.
-        if self.width != other.width || self.height != other.height {
-            return false;
-        }
+    /// Returns `true` if the `Grid` could fit another `Grid` on top of it with
+    /// X and Y co-ordinate offsets.
+    fn fits_grid(&self, other: &Self, offset_x: i8, offset_y: i8) -> bool {
+        for y in 0..other.height {
+            for x in 0..other.width {
+                if !other.is_occupied(x, y) {
+                    continue;
+                }
 
-        for index in 0..self.width * self.height {
-            if self.cells[index] != other.cells[index] {
-                return false;
+                let x = x + offset_x;
+                let y = y + offset_y;
+
+                if self.is_occupied(x, y) {
+                    return false;
+                }
             }
         }
 
         true
     }
 
+    /// Stamps another `Grid` onto the `Grid`
+    fn stamp_grid(&mut self, other: &Self, offset_x: i8, offset_y: i8, value: bool) {
+        for y in 0..other.height {
+            for x in 0..other.width {
+                if !other.is_occupied(x, y) {
+                    continue;
+                }
+
+                let x = x + offset_x;
+                let y = y + offset_y;
+                let index = self.index(x, y);
+                self.cells[index] = value;
+            }
+        }
+    }
+
+    /// Returns `true` if the cell at an X and Y co-ordinate is occupied.
+    fn is_occupied(&self, x: i8, y: i8) -> bool {
+        x < 0 || x >= self.width || y < 0 || y >= self.height || self.cells[self.index(x, y)]
+    }
+
+    /// Returns an index from an X and Y co-ordinate.
+    fn index(&self, x: i8, y: i8) -> usize {
+        let x = usize::try_from(x).expect("x should be positive");
+        let y = usize::try_from(y).expect("y should be positive");
+        let width = usize::try_from(self.width).expect("width should be positive");
+        x + y * width
+    }
+
+    /// Returns `true` if the `Grid` is a duplicate of another `Grid`.
+    fn is_duplicate_of(&self, other: &Self) -> bool {
+        // This does not account for translation or rotations of non-square
+        // shapes, but this probably doesn't apply to the input.
+        self.width == other.width
+            && self.height == other.height
+            && self.cells.iter().zip(&other.cells).all(|(a, b)| a == b)
+    }
+
     /// Creates a new variant of the `Grid`, flipped horizontally.
     fn flip(&self) -> Self {
-        let mut flipped_grid = Self::new(self.width, self.height);
+        let width = usize::try_from(self.width).expect("width should be positive");
+        let height = usize::try_from(self.height).expect("height should be positive");
+        let mut flipped_grid = Self::new(width, height);
 
-        for y in 0..self.height {
-            for x in 0..self.width {
-                flipped_grid.cells[x + y * self.width] =
-                    self.cells[self.width - x - 1 + y * self.width];
+        for y in 0..height {
+            for x in 0..width {
+                flipped_grid.cells[x + y * width] = self.cells[width - x - 1 + y * width];
             }
         }
 
@@ -157,14 +312,16 @@ impl Grid {
 
     /// Creates a new variant of the `Grid`, rotated 90 degrees clockwise.
     fn rotate(&self) -> Self {
-        let mut rotated_grid = Self::new(self.height, self.width);
+        let width = usize::try_from(self.width).expect("width should be positive");
+        let height = usize::try_from(self.height).expect("height should be positive");
+        let mut rotated_grid = Self::new(height, width);
 
-        for y in 0..rotated_grid.height {
-            for x in 0..rotated_grid.width {
+        for y in 0..width {
+            for x in 0..height {
                 let source_x = y;
-                let source_y = rotated_grid.width - x - 1;
-                let source_index = source_x + source_y * self.width;
-                let target_index = x + y * rotated_grid.width;
+                let source_y = height - x - 1;
+                let source_index = source_x + source_y * width;
+                let target_index = x + y * height;
                 rotated_grid.cells[target_index] = self.cells[source_index];
             }
         }
@@ -267,20 +424,55 @@ fn parse_region(line: &str) -> Option<Region> {
     })
 }
 
-/*
 #[cfg(test)]
 mod tests {
     use super::*;
 
     /// The example input for testing.
-    static INPUT: &str = "";
+    static INPUT: &str = "\
+        0:\n\
+        ###\n\
+        ##.\n\
+        ##.\n\
+        \n\
+        1:\n\
+        ###\n\
+        ##.\n\
+        .##\n\
+        \n\
+        2:\n\
+        .##\n\
+        ###\n\
+        ##.\n\
+        \n\
+        3:\n\
+        ##.\n\
+        ###\n\
+        ##.\n\
+        \n\
+        4:\n\
+        ###\n\
+        #..\n\
+        ###\n\
+        \n\
+        5:\n\
+        ###\n\
+        .#.\n\
+        ###\n\
+        \n\
+        4x4: 0 0 0 0 2 0\n\
+        12x5: 1 0 1 0 2 2\n\
+        12x5: 1 0 1 0 3 2\n";
 
     /// Tests part one.
     #[test]
-    fn part_one_works() {}
+    fn part_one_works() {
+        assert_eq!(part_one(INPUT), 2.into());
+    }
 
+    /*
     /// Tests part two.
     #[test]
     fn part_two_works() {}
+    */
 }
-*/
