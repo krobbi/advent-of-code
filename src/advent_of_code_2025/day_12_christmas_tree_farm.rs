@@ -20,36 +20,32 @@ pub fn part_one(input: &str) -> Solution {
     // I can't think of a good way to solve this other than trying every
     // possibility until one fits. Flipping or rotating a shape may produce
     // duplicates, which can be removed to possibly speed up the solution.
-    let Some((shapes, regions)) = parse_shapes_and_regions(input) else {
+    let Some((shapes, _regions)) = parse_shapes_and_regions(input) else {
         return Solution::ParseError;
     };
+
+    let shapes = shapes.into_iter().map(grid_variants).collect::<Box<_>>();
 
     for (index, shape) in shapes.iter().enumerate() {
         println!("\nShape {index}:");
 
-        for y in 0..shape.height {
-            print!(" ");
+        for variant in shape {
+            for y in 0..variant.height {
+                print!(" ");
 
-            for x in 0..shape.width {
-                if shape.cells[x + y * shape.width] {
-                    print!("[]");
-                } else {
-                    print!("  ");
+                for x in 0..variant.width {
+                    if variant.cells[x + y * variant.width] {
+                        print!("[]");
+                    } else {
+                        print!("  ");
+                    }
                 }
+
+                println!();
             }
 
-            println!();
+            println!("---");
         }
-    }
-
-    for region in regions {
-        print!("{}x{} region", region.width, region.height);
-
-        for count in region.shape_counts {
-            print!(", {count}");
-        }
-
-        println!();
     }
 
     Solution::default()
@@ -59,6 +55,12 @@ pub fn part_one(input: &str) -> Solution {
 pub fn part_two(input: &str) -> Solution {
     let _ = input;
     Solution::default()
+}
+
+/// Consumes a [`Grid`] and returns its variants.
+fn grid_variants(grid: Grid) -> Vec<Grid> {
+    let flipped_grid = grid.flip();
+    vec![grid, flipped_grid]
 }
 
 /// A grid of cells which may be occupied by a present.
@@ -81,6 +83,20 @@ impl Grid {
             height,
             cells: vec![false; width * height].into(),
         }
+    }
+
+    /// Returns a new flipped variant of the `Grid`.
+    fn flip(&self) -> Self {
+        let mut flipped_grid = Self::new(self.width, self.height);
+
+        for y in 0..self.height {
+            for x in 0..self.width {
+                flipped_grid.cells[x + y * self.width] =
+                    self.cells[self.width - x - 1 + y * self.width];
+            }
+        }
+
+        flipped_grid
     }
 }
 
