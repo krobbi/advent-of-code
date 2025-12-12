@@ -24,7 +24,7 @@ pub fn part_one(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    let shapes = shapes.into_iter().map(grid_variants).collect::<Box<_>>();
+    let shapes = process_shapes(shapes);
 
     for (index, shape) in shapes.iter().enumerate() {
         println!("\nShape {index}:");
@@ -57,7 +57,18 @@ pub fn part_two(input: &str) -> Solution {
     Solution::default()
 }
 
-/// Consumes a [`Grid`] and returns its rotational and chiral variants.
+/// Processes a boxed slice of shape [`Grid`]s into a boxed slice of boxed
+/// slices of shape variant [`Grid`]s.
+fn process_shapes(shapes: Box<[Grid]>) -> Box<[Box<[Grid]>]> {
+    shapes
+        .into_iter()
+        .map(grid_variants)
+        .map(deduplicate_grids)
+        .collect()
+}
+
+/// Consumes a [`Grid`] and returns a vector of its rotational and chiral
+/// variant [`Grid`]s.
 fn grid_variants(grid: Grid) -> Vec<Grid> {
     let mut flipped_rotations = grid_rotations(grid.flip());
     let mut rotations = grid_rotations(grid);
@@ -65,12 +76,30 @@ fn grid_variants(grid: Grid) -> Vec<Grid> {
     rotations
 }
 
-/// Consumes a [`Grid`] and returns its rotational variants.
+/// Consumes a [`Grid`] and returns a vector of its rotational variant
+/// [`Grid`]s.
 fn grid_rotations(grid: Grid) -> Vec<Grid> {
     let r1 = grid.rotate();
     let r2 = r1.rotate();
     let r3 = r2.rotate();
     vec![grid, r1, r2, r3]
+}
+
+/// Consumes a vector of [`Grid`]s and returns a boxed slice of the [`Grid`]s
+/// with any duplicates removed.
+fn deduplicate_grids(mut grids: Vec<Grid>) -> Box<[Grid]> {
+    let mut deduplicated_grids = Vec::new();
+
+    while let Some(grid) = grids.pop() {
+        if !deduplicated_grids
+            .iter()
+            .any(|g: &Grid| g.is_duplicate_of(&grid))
+        {
+            deduplicated_grids.push(grid);
+        }
+    }
+
+    deduplicated_grids.into()
 }
 
 /// A grid of cells which may be occupied by a present.
@@ -95,7 +124,24 @@ impl Grid {
         }
     }
 
-    /// Returns a new variant of the `Grid`, flipped horizontally.
+    /// Returns `true` if the `Grid` is a duplicate of another `Grid`.
+    fn is_duplicate_of(&self, other: &Self) -> bool {
+        // This does not account for translation or rotations of non-square
+        // shapes, but this probably doesn't apply to the input.
+        if self.width != other.width || self.height != other.height {
+            return false;
+        }
+
+        for index in 0..self.width * self.height {
+            if self.cells[index] != other.cells[index] {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Creates a new variant of the `Grid`, flipped horizontally.
     fn flip(&self) -> Self {
         let mut flipped_grid = Self::new(self.width, self.height);
 
@@ -109,7 +155,7 @@ impl Grid {
         flipped_grid
     }
 
-    /// Returns a new variant of the `Grid`, rotated 90 degrees clockwise.
+    /// Creates a new variant of the `Grid`, rotated 90 degrees clockwise.
     fn rotate(&self) -> Self {
         let mut rotated_grid = Self::new(self.height, self.width);
 
