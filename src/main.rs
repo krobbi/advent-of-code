@@ -29,7 +29,6 @@ macro_rules! define_data {
             $(#[allow(unused_mut, reason = "some events may not have any completed puzzles")]
             let mut event = Event::new($year);
             $(event.insert_puzzle(Puzzle {
-                #[allow(clippy::zero_prefixed_literal, reason = "consistent formatting")]
                 day: $day,
                 input_path: concat!(
                     "inputs/",
@@ -50,15 +49,15 @@ macro_rules! define_data {
 
 define_data! {
     2015: advent_of_code_2015 {
-        01: day_01_not_quite_lisp,
-        02: day_02_i_was_told_there_would_be_no_math,
-        03: day_03_perfectly_spherical_houses_in_a_vacuum,
-        04: day_04_the_ideal_stocking_stuffer,
-        05: day_05_doesnt_he_have_intern_elves_for_this,
-        06: day_06_probably_a_fire_hazard,
-        07: day_07_some_assembly_required,
-        08: day_08_matchsticks,
-        09: day_09_all_in_a_single_night,
+        1: day_01_not_quite_lisp,
+        2: day_02_i_was_told_there_would_be_no_math,
+        3: day_03_perfectly_spherical_houses_in_a_vacuum,
+        4: day_04_the_ideal_stocking_stuffer,
+        5: day_05_doesnt_he_have_intern_elves_for_this,
+        6: day_06_probably_a_fire_hazard,
+        7: day_07_some_assembly_required,
+        8: day_08_matchsticks,
+        9: day_09_all_in_a_single_night,
         10: day_10_elves_look_elves_say,
         11: day_11_corporate_policy,
         12: day_12_js_abacus_framework_io,
@@ -73,15 +72,15 @@ define_data! {
     2023: advent_of_code_2023 {},
     2024: advent_of_code_2024 {},
     2025: advent_of_code_2025 {
-        01: day_01_secret_entrance,
-        02: day_02_gift_shop,
-        03: day_03_lobby,
-        04: day_04_printing_department,
-        05: day_05_cafeteria,
-        06: day_06_trash_compactor,
-        07: day_07_laboratories,
-        08: day_08_playground,
-        09: day_09_movie_theater,
+        1: day_01_secret_entrance,
+        2: day_02_gift_shop,
+        3: day_03_lobby,
+        4: day_04_printing_department,
+        5: day_05_cafeteria,
+        6: day_06_trash_compactor,
+        7: day_07_laboratories,
+        8: day_08_playground,
+        9: day_09_movie_theater,
         10: day_10_factory,
         11: day_11_reactor,
         12: day_12_christmas_tree_farm,
@@ -129,12 +128,12 @@ fn run_event(event: &Event, config: &Config) {
         }
         Some(day) => {
             if !event.has_day(day) {
-                println!("  Error - Day {day:02} does not exist");
+                println!("  Error - Day {day} does not exist");
                 return;
             }
 
             let Some(puzzle) = event.puzzle(day) else {
-                println!("  Day {day:02} - Incomplete");
+                println!("  Day {day} - Incomplete");
                 return;
             };
 
@@ -145,7 +144,7 @@ fn run_event(event: &Event, config: &Config) {
 
 /// Runs a [`Puzzle`] and prints its result.
 fn run_puzzle(puzzle: &Puzzle) {
-    print!("  Day {:02} - ", puzzle.day);
+    print!("  Day {} - ", puzzle.day);
     flush_stdout();
 
     let input_path = Path::new(puzzle.input_path);
