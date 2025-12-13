@@ -6,6 +6,9 @@ pub enum Solution {
     /// A solution was found.
     Solved(String),
 
+    /// A free solution at the end of an [`Event`][crate::data::Event].
+    Finished,
+
     /// A [`Part`][crate::data::Part] was defined with no solution.
     #[allow(dead_code, reason = "all puzzles may be completed")]
     #[default]
@@ -40,6 +43,7 @@ impl Display for Solution {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let message = match self {
             Self::Solved(value) => return write!(f, "[{value}]"),
+            Self::Finished => "[finished]",
             Self::Incomplete => "incomplete",
             Self::TooSlow => "too slow",
             Self::ParseError => "parse error",

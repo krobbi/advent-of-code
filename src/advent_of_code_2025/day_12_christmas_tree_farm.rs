@@ -39,9 +39,8 @@ pub fn part_one(input: &str) -> Solution {
 
 /// Solves part two.
 pub fn part_two(input: &str) -> Solution {
-    // Part two can't be solved until day 10 part two is solved.
     let _ = input;
-    Solution::default()
+    Solution::Finished
 }
 
 /// Processes a boxed slice of shape [`Grid`]s into [`ShapeData`].
@@ -470,9 +469,9 @@ mod tests {
         assert_eq!(part_one(INPUT), 2.into());
     }
 
-    /*
     /// Tests part two.
     #[test]
-    fn part_two_works() {}
-    */
+    fn part_two_works() {
+        assert_eq!(part_two(INPUT), Solution::Finished);
+    }
 }
