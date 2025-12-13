@@ -2,7 +2,9 @@
 //!
 //! [link]: https://adventofcode.com/2025/day/10
 
-use std::{collections::HashMap, iter::Peekable, str::Chars};
+use std::{iter::Peekable, str::Chars};
+
+use microlp::{ComparisonOp, LinearExpr, OptimizationDirection, Problem};
 
 use crate::Solution;
 
@@ -37,22 +39,14 @@ pub fn part_two(input: &str) -> Solution {
         return Solution::ParseError;
     };
 
-    // This solution is good enough for the test but uses tons of memory on the
-    // actual puzzle input, possibly causing a freeze depending on how much
-    // memory you have.
-    // TODO: Optimize this solution and solve 2025 day 10 part two.
-    if machines.len() > 3 {
-        return Solution::TooSlow;
-    }
-
     let mut total_button_presses = 0;
 
-    for machine in &machines {
-        let Some(button_presses) = solve_machine_part_two(machine) else {
+    for machine in machines {
+        let Some(machine_button_presses) = solve_machine_part_two(&machine) else {
             return Solution::SolveError;
         };
 
-        total_button_presses += button_presses;
+        total_button_presses += machine_button_presses;
     }
 
     total_button_presses.into()
@@ -101,32 +95,45 @@ fn solve_machine_part_one(machine: &Machine) -> u32 {
 /// Solves part two for one [`Machine`]. Returns [`None`] if the [`Machine`]
 /// could not be solved.
 fn solve_machine_part_two(machine: &Machine) -> Option<u32> {
-    let mut joltage_costs: HashMap<Joltages, u32> = HashMap::new();
-    let mut unexplored_states = vec![(Joltages::default(), 0)];
+    // I got stuck on this part. Looking online, I saw that some people were
+    // using "Z3" or some other library. I did not know about linear solvers
+    // before, so I think the experience offsets breaking my own rules about
+    // dependencies.
 
-    while let Some((joltages, cost)) = unexplored_states.pop() {
-        if joltages.exceed(&machine.joltage_requirements) {
-            // Dead end, can't add any more joltage.
-            continue;
-        }
+    // There is a variable for every number of button presses.
+    let mut problem = Problem::new(OptimizationDirection::Minimize);
+    let mut button_vars = Vec::new();
 
-        if let Some(explored_cost) = joltage_costs.get(&joltages).copied()
-            && explored_cost <= cost
-        {
-            // This state was already reached with a better or equal cost.
-            continue;
-        }
-
-        joltage_costs.insert(joltages.clone(), cost);
-
-        for button in machine.buttons.iter().copied() {
-            let joltages = joltages.with_button(button);
-            let cost = cost + 1;
-            unexplored_states.push((joltages, cost));
-        }
+    for _ in 0..machine.buttons.len() {
+        let button_var = problem.add_integer_var(1.0, (0, i32::MAX));
+        button_vars.push(button_var);
     }
 
-    joltage_costs.get(&machine.joltage_requirements).copied()
+    // Every joltage level should be equal to the number of button presses which
+    // affect it.
+    for (joltage_index, joltage) in machine.joltage_requirements.iter().copied().enumerate() {
+        let button_mask = 1 << joltage_index;
+        let mut constrained_vars = LinearExpr::empty();
+
+        for (button_index, button) in machine.buttons.iter().copied().enumerate() {
+            if button & button_mask == 0 {
+                continue;
+            }
+
+            constrained_vars.add(button_vars[button_index], 1.0);
+        }
+
+        problem.add_constraint(constrained_vars, ComparisonOp::Eq, f64::from(joltage));
+    }
+
+    let solution = problem.solve().ok()?;
+
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "solution should be a positive integer"
+    )]
+    Some(solution.objective().round() as u32)
 }
 
 /// A machine.
@@ -139,34 +146,7 @@ struct Machine {
     buttons: Box<[u16]>,
 
     /// The joltage requirements.
-    joltage_requirements: Joltages,
-}
-
-/// A set of joltages.
-#[derive(Clone, Default, PartialEq, Eq, Hash)]
-struct Joltages([u16; 10]);
-
-impl Joltages {
-    /// Returns new [`Joltages`] after pressing a button.
-    fn with_button(&self, button: u16) -> Joltages {
-        let mut new_joltages = self.0;
-        let mut mask = 1;
-
-        for joltage in &mut new_joltages {
-            if button & mask != 0 {
-                *joltage += 1;
-            }
-
-            mask <<= 1;
-        }
-
-        Joltages(new_joltages)
-    }
-
-    /// Returns `true` if the [`Joltages`] exceed some other [`Joltages`].
-    fn exceed(&self, other: &Self) -> bool {
-        self.0.into_iter().zip(other.0).any(|(a, b)| a > b)
-    }
+    joltage_requirements: Box<[u16]>,
 }
 
 /// Parses a boxed slice of [`Machine`]s from input. This function returns
@@ -231,7 +211,7 @@ fn parse_machine(line: &str) -> Option<Machine> {
         return None;
     }
 
-    let joltage_requirements = parse_joltages(&mut chars)?;
+    let joltage_requirements = parse_joltage_requirements(&mut chars)?;
 
     Some(Machine {
         target,
@@ -265,10 +245,10 @@ fn parse_button(chars: &mut Peekable<Chars>) -> Option<u16> {
     (1..1024).contains(&button).then_some(button)
 }
 
-/// Parses a set of [`Joltages`] from a character iterator after consuming its
-/// opening brace. This function returns [`None`] if [`Joltages`] could not be
-/// parsed.
-fn parse_joltages(chars: &mut Peekable<Chars>) -> Option<Joltages> {
+/// Parses a set of joltage requirements from a character iterator after
+/// consuming its opening brace. This function returns [`None`] if joltages
+/// could not be parsed.
+fn parse_joltage_requirements(chars: &mut Peekable<Chars>) -> Option<Box<[u16]>> {
     let mut joltages = Vec::new();
 
     loop {
@@ -279,12 +259,6 @@ fn parse_joltages(chars: &mut Peekable<Chars>) -> Option<Joltages> {
         }
 
         let joltage = joltage.parse().ok()?;
-
-        if joltage == 0xffff {
-            // We need room to check for overjoltage.
-            return None;
-        }
-
         joltages.push(joltage);
 
         match chars.next()? {
@@ -298,13 +272,7 @@ fn parse_joltages(chars: &mut Peekable<Chars>) -> Option<Joltages> {
         return None;
     }
 
-    let mut raw_joltages = [0; 10];
-
-    for (index, joltage) in joltages.iter().copied().enumerate() {
-        raw_joltages[index] = joltage;
-    }
-
-    Some(Joltages(raw_joltages))
+    Some(joltages.into())
 }
 
 #[cfg(test)]

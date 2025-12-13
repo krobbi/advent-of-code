@@ -39,6 +39,11 @@ used to avoid "reinventing the wheel":
 * [json](https://crates.io/crates/json) - JSON parsing in 2015 day 12
 * [md5](https://crates.io/crates/md5) - MD5 hashing in 2015 day 4
 
+Despite avoiding dependencies for puzzle solutions, I am using
+[microlp](https://crates.io/crates/microlp) (a linear solver) for 2025 day 10
+part 2. I got stuck on this part, and other users used similar libraries to
+solve this.
+
 ## Credits
 Advent of Code was created by [Eric Wastl](https://was.tl/) and is a registered
 trademark in the United States. This repository is not affiliated with Advent
